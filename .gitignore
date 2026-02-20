@@ -6,5 +6,9 @@ settings.json
 # data folders
 data/
 
+# workbook
+workbook.ipynb
+*checkpoint.ipynb
+
 # secrets
 .env

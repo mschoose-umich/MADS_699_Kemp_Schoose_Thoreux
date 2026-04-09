@@ -12,6 +12,9 @@ CFBD_API_KEY=[your key]
 
 An example .env file is included in the repo.
 
+Install dependencies with:
+pip install -r requirements.txt
+
 Once that has been completed you can run scripts individually in order to request data, clean data, build the model, and run the streamlit app. Or, more conveniently, you can do it all at once with the run_pipeline_and_dashboard.py script.
 
 RUN AT ONCE:

@@ -1,10 +1,15 @@
 # build folders
 venv/
+.venv/
+__pycache__/
 settings.json
 *.pyc
 
 # data folders
 data/
+
+# generated output
+output/
 
 # workbook
 workbook.ipynb
@@ -12,3 +17,11 @@ workbook.ipynb
 
 # secrets
 .env
+
+# IDE
+.idea/
+
+# Claude / AI context
+**/CLAUDE.md
+workflow-orchestration.md
+context/

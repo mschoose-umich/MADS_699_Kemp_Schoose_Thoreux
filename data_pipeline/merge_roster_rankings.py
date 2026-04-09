@@ -1,4 +1,10 @@
+import os
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
+
 import pandas as pd
 
 def convert_recruitIds_to_int(df):
@@ -18,9 +24,9 @@ def convert_recruitIds_to_int(df):
 
 
 
-recruit_csv = 'data/recruit_data.csv'
-rosters_path = Path('data/rosters')
-out_path = Path('data/merged_rosters')
+recruit_csv = os.path.join(PROJECT_ROOT, 'data/recruit_data.csv')
+rosters_path = Path(PROJECT_ROOT) / 'data' / 'rosters'
+out_path = Path(PROJECT_ROOT) / 'data' / 'merged_rosters'
 out_path.mkdir(parents=True, exist_ok=True)
 
 recruit_df = pd.read_csv(recruit_csv)

@@ -1,4 +1,9 @@
 import os
+import sys
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
+
 import requests
 from dotenv import load_dotenv
 import pandas as pd
@@ -6,7 +11,7 @@ import config
 
 BASE = "https://api.collegefootballdata.com"
 
-load_dotenv()
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 TOKEN = os.getenv("CFBD_API_KEY")
 
@@ -27,5 +32,5 @@ for recruit_year in range(start_year, end_year + 1):
 
 recruits_df = pd.DataFrame(recruits_all)
 
-os.makedirs('data', exist_ok=True)
-recruits_df.to_csv('data/recruit_data.csv', index=False,  )
+os.makedirs(os.path.join(PROJECT_ROOT, 'data'), exist_ok=True)
+recruits_df.to_csv(os.path.join(PROJECT_ROOT, 'data/recruit_data.csv'), index=False)

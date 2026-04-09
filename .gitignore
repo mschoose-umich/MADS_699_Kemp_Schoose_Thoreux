@@ -5,6 +5,7 @@ settings.json
 
 # data folders
 data/
+archive/
 
 # workbook
 workbook.ipynb

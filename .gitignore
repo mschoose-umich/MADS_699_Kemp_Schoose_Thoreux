@@ -20,8 +20,3 @@ workbook.ipynb
 
 # IDE
 .idea/
-
-# Claude / AI context
-**/CLAUDE.md
-workflow-orchestration.md
-context/

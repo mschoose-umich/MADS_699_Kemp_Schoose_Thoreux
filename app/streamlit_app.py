@@ -1,14 +1,15 @@
-import json
 import ast
 import os
 import sys
+import pickle
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, APP_DIR)
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 import altair as alt
 import pydeck as pdk
 
@@ -68,14 +69,25 @@ def load_data():
     map_df = map_df.rename(columns={"latitude": "team_lat", "longitude": "team_lon"})
     map_df = map_df.dropna(subset=["team_lat", "team_lon"])
 
-    # Model metrics
-    with open(os.path.join(DATA_DIR, "model_metrics.json")) as f:
-        metrics = json.load(f)
+    # Win probability data
+    wp_games_path = os.path.join(DATA_DIR, "2025_games_clean.csv")
+    wp_rosters_path = os.path.join(DATA_DIR, "2025_rosters.csv")
+    wp_model_path = os.path.join(DATA_DIR, "production_model.pkl")
 
-    with open(os.path.join(DATA_DIR, "feature_importances.json")) as f:
-        importances = json.load(f)
+    if os.path.exists(wp_games_path) and os.path.exists(wp_rosters_path):
+        wp_games = pd.read_csv(wp_games_path)
+        wp_games["startDate"] = pd.to_datetime(wp_games["startDate"], errors="coerce")
+        wp_rosters = pd.read_csv(wp_rosters_path)
+    else:
+        wp_games, wp_rosters = None, None
 
-    return rankings, map_df, metrics, importances
+    if os.path.exists(wp_model_path):
+        with open(wp_model_path, "rb") as f:
+            wp_model = pickle.load(f)
+    else:
+        wp_model = None
+
+    return rankings, map_df, wp_games, wp_rosters, wp_model
 
 
 def color_scale(teams):
@@ -87,15 +99,16 @@ def color_scale(teams):
 def main():
     st.title("CFB Power Rankings & Recruiting")
 
-    rankings, map_df, metrics, importances = load_data()
+    rankings, map_df, wp_games, wp_rosters, wp_model = load_data()
 
     # ── Shared data for filters ─────────────────────────────────────────────
     all_confs = sorted(rankings["conference"].dropna().unique())
     hist_years = sorted(rankings[rankings["type"] == "Historical"]["year"].unique())
 
     # ── Tab layout ───────────────────────────────────────────────────────────
-    tab_rank, tab_proj, tab_model, tab_map = st.tabs([
-        "Power Rankings", "Multi-Year Projections", "Model Performance", "Recruiting Map"
+    tab_rank, tab_proj, tab_map, tab_wp = st.tabs([
+        "Power Rankings", "Multi-Year Projections",
+        "Recruiting Map", "Win Probability Simulator",
     ])
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -300,61 +313,6 @@ def main():
             st.altair_chart(traj_chart, use_container_width=True)
 
     # ══════════════════════════════════════════════════════════════════════════
-    # TAB 3 — Model Performance
-    # ══════════════════════════════════════════════════════════════════════════
-    with tab_model:
-        st.subheader("Model Performance Metrics")
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("R²", f"{metrics.get('r2', 'N/A'):.3f}")
-        col2.metric("RMSE", f"{metrics.get('rmse', 'N/A'):.3f}")
-        col3.metric("Spearman r", f"{metrics.get('spearman_r', 'N/A'):.3f}")
-        col4.metric("Interval Coverage", f"{metrics.get('interval_coverage', 'N/A'):.1%}")
-
-        col5, col6, col7, col8 = st.columns(4)
-        col5.metric("Rolling OOS RMSE", f"{metrics.get('rolling_val_rmse', 'N/A'):.3f}",
-                    help="Walk-forward validation 2020-2025")
-        col6.metric("vs. Persistence", f"{metrics.get('baseline_rmse', 'N/A'):.3f}",
-                    help="Persistence baseline RMSE (next year = this year)")
-        col7.metric("vs. Ridge", f"{metrics.get('ridge_rmse', 'N/A'):.3f}",
-                    help="OLS Ridge baseline RMSE")
-        col8.metric("Ranker Spearman r", f"{metrics.get('ranker_spearman_r', 'N/A'):.3f}",
-                    help="LightGBM Ranker (ordinal) Spearman r — regression model wins")
-
-        st.divider()
-        st.subheader("Feature Importances")
-        imp_df = pd.DataFrame(
-            list(importances.items()), columns=["feature", "importance"]
-        ).sort_values("importance", ascending=False).head(20)
-
-        imp_chart = alt.Chart(imp_df).mark_bar().encode(
-            x=alt.X("importance:Q", title="Importance Score"),
-            y=alt.Y("feature:N", sort="-x", title=""),
-            color=alt.value("#4C78A8"),
-            tooltip=["feature:N", "importance:Q"],
-        ).properties(height=400, title="Top 20 Feature Importances (LightGBM)")
-        st.altair_chart(imp_chart, use_container_width=True)
-
-        st.divider()
-        st.subheader("Rolling Out-of-Sample RMSE by Year")
-        rolling = metrics.get("rolling_val_per_year", {})
-        if rolling:
-            rolling_df = pd.DataFrame(
-                [(int(yr), rmse) for yr, rmse in rolling.items()],
-                columns=["year", "rmse"]
-            )
-            rolling_chart = alt.Chart(rolling_df).mark_bar(color="#E45756").encode(
-                x=alt.X("year:O", title="Validation Year"),
-                y=alt.Y("rmse:Q", title="RMSE", scale=alt.Scale(zero=False)),
-                tooltip=["year:O", alt.Tooltip("rmse:Q", format=".3f")],
-            ).properties(height=250, title="Walk-Forward Validation RMSE (LightGBM)")
-            baseline_line = alt.Chart(pd.DataFrame({"y": [metrics["baseline_rmse"]]})).mark_rule(
-                strokeDash=[4, 4], color="gray"
-            ).encode(y="y:Q")
-            st.altair_chart(rolling_chart + baseline_line, use_container_width=True)
-            st.caption("Dashed line = persistence baseline RMSE")
-
-    # ══════════════════════════════════════════════════════════════════════════
     # TAB 4 — Recruiting Map
     # ══════════════════════════════════════════════════════════════════════════
     with tab_map:
@@ -426,6 +384,252 @@ def main():
                     tooltip={"text": "{name} ({stars}★)\nFrom: {city}, {stateProvince}\nTo: {committedTo}"},
                     map_style=pdk.map_styles.LIGHT,
                 ))
+
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # TAB 5 — Win Probability Simulator
+    # ══════════════════════════════════════════════════════════════════════════
+    with tab_wp:
+        if wp_games is None or wp_rosters is None or wp_model is None:
+            st.warning(
+                "Win probability data not found. Run the full pipeline first:\n"
+                "  `data_pipeline/get_team_starters.py` → "
+                "`data_pipeline/build_matchup_features.py` → "
+                "`analysis/build_win_model.py`"
+            )
+        else:
+            _wp_positions = [
+                "QB1", "RB1", "WR1", "WR2", "TE1",
+                "OL1", "OL2", "OL3", "OL4", "OL5",
+                "DL1", "DL2", "DL3", "DL4",
+                "LB1", "LB2", "LB3",
+                "DB1", "DB2", "DB3", "DB4",
+                "PK1", "P1",
+            ]
+            _wp_features = [
+                "QB_diff", "OL_adv_1", "OL_adv_2", "WR_adv_1", "WR_adv_2",
+                "RB_adv_1", "RB_adv_2", "TE_diff", "PK_diff", "P_diff",
+                "QB1_vs_DB_2", "QB2_vs_DB_1", "PASS_SYNERGY_diff", "team_1_is_home",
+            ]
+            _rating_options = [0.0, 2.0, 3.0, 4.0, 5.0]
+
+            def _wp_get_roster(team_name):
+                exact = wp_rosters.loc[wp_rosters["team"] == team_name]
+                if not exact.empty:
+                    return exact.iloc[0].to_dict()
+                canon = str(team_name).strip()
+                fallback = wp_rosters.loc[wp_rosters["team"].str.strip() == canon]
+                if not fallback.empty:
+                    return fallback.iloc[0].to_dict()
+                return None
+
+            def _wp_aggregates(row):
+                row = row.copy()
+                row["OL_avg"] = np.mean([row["OL1"], row["OL2"], row["OL3"], row["OL4"], row["OL5"]])
+                row["WR_avg"] = np.mean([row["WR1"], row["WR2"]])
+                row["DL_avg"] = np.mean([row["DL1"], row["DL2"], row["DL3"], row["DL4"]])
+                row["LB_avg"] = np.mean([row["LB1"], row["LB2"], row["LB3"]])
+                row["DB_avg"] = np.mean([row["DB1"], row["DB2"], row["DB3"], row["DB4"]])
+                return row
+
+            def _wp_matchup(t1, t2, t1_home):
+                s1 = (2.0 * t1["QB1"] + 1.0 * t1["WR_avg"] + 0.8 * t1["TE1"]) / 3.8
+                s2 = (2.0 * t2["QB1"] + 1.0 * t2["WR_avg"] + 0.8 * t2["TE1"]) / 3.8
+                return {
+                    "QB_diff": t1["QB1"] - t2["QB1"],
+                    "OL_adv_1": t1["OL_avg"] - t2["DL_avg"],
+                    "OL_adv_2": t2["OL_avg"] - t1["DL_avg"],
+                    "WR_adv_1": t1["WR_avg"] - t2["DB_avg"],
+                    "WR_adv_2": t2["WR_avg"] - t1["DB_avg"],
+                    "RB_adv_1": t1["RB1"] - t2["LB_avg"],
+                    "RB_adv_2": t2["RB1"] - t1["LB_avg"],
+                    "TE_diff": t1["TE1"] - t2["TE1"],
+                    "PK_diff": t1["PK1"] - t2["PK1"],
+                    "P_diff": t1["P1"] - t2["P1"],
+                    "QB1_vs_DB_2": t1["QB1"] - t2["DB_avg"],
+                    "QB2_vs_DB_1": t2["QB1"] - t1["DB_avg"],
+                    "PASS_SYNERGY_diff": s1 - s2,
+                    "team_1_is_home": int(t1_home),
+                }
+
+            def _wp_predict(team_profile, team_games_df, selected):
+                rows, valid_idx, skipped = [], [], []
+                for idx, game in team_games_df.iterrows():
+                    is_home = game["homeTeam"] == selected
+                    opponent = game["awayTeam"] if is_home else game["homeTeam"]
+                    opp_row = _wp_get_roster(opponent)
+                    if opp_row is None:
+                        skipped.append(opponent)
+                        continue
+                    opp_row = _wp_aggregates(opp_row)
+                    rows.append(_wp_matchup(team_profile, opp_row, is_home))
+                    valid_idx.append(idx)
+                if not rows:
+                    return pd.Series(dtype=float), [], skipped
+                X = pd.DataFrame(rows)[_wp_features]
+                probs = wp_model.predict_proba(X)[:, 1]
+                return pd.Series(probs, index=valid_idx), valid_idx, skipped
+
+            st.title("College Football Win Probability Simulator")
+
+            wp_teams = sorted(
+                set(wp_games["homeTeam"]).union(set(wp_games["awayTeam"]))
+            )
+            selected_team = st.selectbox("Select a Team", wp_teams, key="wp_team")
+            team_roster = _wp_get_roster(selected_team)
+
+            if team_roster is None:
+                st.error(f"No roster found for {selected_team}")
+            else:
+                team_games_filtered = wp_games[
+                    (wp_games["homeTeam"] == selected_team)
+                    | (wp_games["awayTeam"] == selected_team)
+                ].sort_values("startDate")
+
+                if team_games_filtered.empty:
+                    st.warning(f"No games found for {selected_team}.")
+                else:
+                    left_col, right_col = st.columns([1.0, 1.8])
+
+                    with left_col:
+                        st.subheader("Adjust Team Roster")
+                        edited = {}
+                        sel_cols = st.columns(2)
+                        for i, pos in enumerate(_wp_positions):
+                            cur = float(team_roster.get(pos, 0.0))
+                            default_idx = (
+                                _rating_options.index(cur) if cur in _rating_options else 0
+                            )
+                            with sel_cols[i % 2]:
+                                edited[pos] = st.selectbox(
+                                    pos, options=_rating_options,
+                                    index=default_idx,
+                                    key=f"wp_{selected_team}_{pos}",
+                                )
+
+                    original = _wp_aggregates(team_roster.copy())
+                    modified = _wp_aggregates({**team_roster, **edited})
+
+                    changes = []
+                    for pos in _wp_positions:
+                        orig_val = float(team_roster.get(pos, 0.0))
+                        new_val = float(edited[pos])
+                        if orig_val != new_val:
+                            changes.append({
+                                "Position": pos, "Original": orig_val,
+                                "Updated": new_val, "Delta": new_val - orig_val,
+                            })
+                    has_changes = len(changes) > 0
+
+                    orig_probs, orig_idx, skip1 = _wp_predict(
+                        original, team_games_filtered, selected_team
+                    )
+                    results = team_games_filtered.loc[orig_idx].copy()
+
+                    if results.empty:
+                        st.error("No valid predictions for this team.")
+                    else:
+                        results["original_prob"] = orig_probs.loc[orig_idx].values
+
+                        if has_changes:
+                            upd_probs, upd_idx, skip2 = _wp_predict(
+                                modified, team_games_filtered, selected_team
+                            )
+                            valid = sorted(set(orig_idx) & set(upd_idx))
+                            results = team_games_filtered.loc[valid].copy()
+                            results["original_prob"] = orig_probs.loc[valid].values
+                            results["updated_prob"] = upd_probs.loc[valid].values
+                            results["delta"] = results["updated_prob"] - results["original_prob"]
+                            skipped = sorted(set(skip1) | set(skip2))
+                        else:
+                            results["updated_prob"] = np.nan
+                            results["delta"] = np.nan
+                            skipped = sorted(set(skip1))
+
+                        if skipped:
+                            st.warning("Skipped (missing roster): " + ", ".join(skipped))
+
+                        results["opponent"] = results.apply(
+                            lambda r: f"vs {r['awayTeam']}"
+                            if r["homeTeam"] == selected_team
+                            else f"@ {r['homeTeam']}",
+                            axis=1,
+                        )
+
+                        with right_col:
+                            st.subheader("Win Probability by Game")
+                            orig_wins = int((results["original_prob"] > 0.5).sum())
+                            st.markdown(f"**Original projected record:** {orig_wins}-{len(results) - orig_wins}")
+                            if has_changes:
+                                new_wins = int((results["updated_prob"] > 0.5).sum())
+                                st.markdown(f"**Updated projected record:** {new_wins}-{len(results) - new_wins}")
+                                st.markdown(f"**Additional wins:** {new_wins - orig_wins:+}")
+                            else:
+                                st.markdown("**Updated projected record:** —")
+                                st.markdown("**Additional wins:** —")
+
+                            chart_df = results.reset_index(drop=True).copy()
+                            bars = alt.Chart(chart_df).mark_bar().encode(
+                                x=alt.X("opponent:N", sort=None, title="Opponent"),
+                                y=alt.Y("original_prob:Q", title="Win Probability",
+                                         scale=alt.Scale(domain=[0, 1])),
+                                color=alt.value("lightgray"),
+                                tooltip=[
+                                    alt.Tooltip("startDate:T", title="Date"),
+                                    alt.Tooltip("homeTeam:N", title="Home"),
+                                    alt.Tooltip("awayTeam:N", title="Away"),
+                                    alt.Tooltip("original_prob:Q", title="Prob", format=".3f"),
+                                ],
+                            )
+
+                            if has_changes:
+                                chart_df["delta_start"] = chart_df[
+                                    ["original_prob", "updated_prob"]
+                                ].min(axis=1)
+                                chart_df["delta_end"] = chart_df[
+                                    ["original_prob", "updated_prob"]
+                                ].max(axis=1)
+                                delta_bars = alt.Chart(chart_df).mark_bar().encode(
+                                    x=alt.X("opponent:N", sort=None, title="Opponent"),
+                                    y=alt.Y("delta_end:Q", scale=alt.Scale(domain=[0, 1])),
+                                    y2=alt.Y2("delta_start:Q"),
+                                    color=alt.condition(
+                                        alt.datum.updated_prob > alt.datum.original_prob,
+                                        alt.value("green"), alt.value("red"),
+                                    ),
+                                    tooltip=[
+                                        alt.Tooltip("startDate:T", title="Date"),
+                                        alt.Tooltip("original_prob:Q", title="Original", format=".3f"),
+                                        alt.Tooltip("updated_prob:Q", title="Updated", format=".3f"),
+                                        alt.Tooltip("delta:Q", title="Delta", format=".3f"),
+                                    ],
+                                )
+                                st.altair_chart(bars + delta_bars, use_container_width=True)
+                            else:
+                                st.altair_chart(bars, use_container_width=True)
+
+                        # Schedule table
+                        st.subheader("Schedule Probabilities")
+                        if has_changes:
+                            disp = results[["startDate", "homeTeam", "awayTeam",
+                                            "original_prob", "updated_prob", "delta"]].copy()
+                            disp["updated_prob"] = disp["updated_prob"].round(3)
+                            disp["delta"] = disp["delta"].round(3)
+                        else:
+                            disp = results[["startDate", "homeTeam", "awayTeam",
+                                            "original_prob"]].copy()
+                        disp["startDate"] = pd.to_datetime(
+                            disp["startDate"], errors="coerce"
+                        ).dt.strftime("%Y-%m-%d")
+                        disp["original_prob"] = disp["original_prob"].round(3)
+                        st.dataframe(disp, use_container_width=True)
+
+                        # Position changes table
+                        st.subheader("Position Changes")
+                        if has_changes:
+                            st.dataframe(pd.DataFrame(changes), use_container_width=True)
+                        else:
+                            st.write("No position changes have been made.")
 
 
 if __name__ == "__main__":

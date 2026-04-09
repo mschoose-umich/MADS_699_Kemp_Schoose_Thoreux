@@ -14,7 +14,8 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, APP_DIR)
 
 import requests
 from dotenv import load_dotenv
@@ -71,11 +72,13 @@ def main():
             "homePoints": "home_points",
             "awayPoints": "away_points",
             "neutralSite": "neutral_site",
+            "startDate": "start_date",
+            "seasonType": "season_type",
         })
         keep_cols = [
             "id", "year", "home_team", "home_conference",
             "away_team", "away_conference", "home_points", "away_points",
-            "neutral_site",
+            "neutral_site", "start_date", "season_type",
         ]
         available = [c for c in keep_cols if c in year_df.columns]
         year_df = year_df[available].copy()

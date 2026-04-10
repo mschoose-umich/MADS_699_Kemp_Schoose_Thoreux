@@ -7,17 +7,23 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, APP_DIR)
 
+import warnings
+from io import StringIO
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import pydeck as pdk
+import folium
+from streamlit_folium import st_folium
 
 from team_colors import TEAM_COLORS, DEFAULT_COLOR
 
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 
 st.set_page_config(page_title="CFB Power Rankings & Recruiting", layout="wide")
+alt.data_transformers.disable_max_rows()
+warnings.filterwarnings('ignore')
 
 
 @st.cache_data
@@ -45,30 +51,6 @@ def load_data():
         [hist_nat[keep], pred[keep]], ignore_index=True
     )
 
-    # Recruiting pipeline map data
-    recruits = pd.read_csv(os.path.join(DATA_DIR, "recruit_data.csv"))
-    team_locs = pd.read_csv(os.path.join(DATA_DIR, "team_locations.csv"))
-
-    def parse_hometown(x):
-        try:
-            if pd.isna(x):
-                return None, None
-            info = ast.literal_eval(x)
-            return info.get("latitude"), info.get("longitude")
-        except Exception:
-            return None, None
-
-    recruits["recruit_lat"], recruits["recruit_lon"] = zip(
-        *recruits["hometownInfo"].apply(parse_hometown)
-    )
-    map_df = recruits.dropna(subset=["recruit_lat", "recruit_lon", "committedTo"])
-    map_df = map_df.merge(
-        team_locs[["team", "latitude", "longitude", "conference"]],
-        left_on="committedTo", right_on="team", how="inner",
-    )
-    map_df = map_df.rename(columns={"latitude": "team_lat", "longitude": "team_lon"})
-    map_df = map_df.dropna(subset=["team_lat", "team_lon"])
-
     # Win probability data
     wp_games_path = os.path.join(DATA_DIR, "2025_games_clean.csv")
     wp_rosters_path = os.path.join(DATA_DIR, "2025_rosters.csv")
@@ -87,7 +69,21 @@ def load_data():
     else:
         wp_model = None
 
-    return rankings, map_df, wp_games, wp_rosters, wp_model
+    # Recruiting dashboard data (alex_branch)
+    dash_path = os.path.join(DATA_DIR, "dashboard_df.csv")
+    recruit_dash_path = os.path.join(DATA_DIR, "recruit_df.csv")
+    teams_dash_path = os.path.join(DATA_DIR, "teams_df.csv")
+    nil_path = os.path.join(DATA_DIR, "pre_post_nil_df.csv")
+
+    if all(os.path.exists(p) for p in [dash_path, recruit_dash_path, teams_dash_path, nil_path]):
+        dashboard_df = pd.read_csv(dash_path)
+        recruit_dash_df = pd.read_csv(recruit_dash_path)
+        teams_dash_df = pd.read_csv(teams_dash_path)
+        pre_post_nil_df = pd.read_csv(nil_path)
+    else:
+        dashboard_df, recruit_dash_df, teams_dash_df, pre_post_nil_df = None, None, None, None
+
+    return rankings, wp_games, wp_rosters, wp_model, dashboard_df, recruit_dash_df, teams_dash_df, pre_post_nil_df
 
 
 def color_scale(teams):
@@ -99,16 +95,18 @@ def color_scale(teams):
 def main():
     st.title("CFB Power Rankings & Recruiting")
 
-    rankings, map_df, wp_games, wp_rosters, wp_model = load_data()
+    (rankings, wp_games, wp_rosters, wp_model,
+     dashboard_df, recruit_dash_df, teams_dash_df, pre_post_nil_df) = load_data()
 
     # ── Shared data for filters ─────────────────────────────────────────────
     all_confs = sorted(rankings["conference"].dropna().unique())
     hist_years = sorted(rankings[rankings["type"] == "Historical"]["year"].unique())
 
     # ── Tab layout ───────────────────────────────────────────────────────────
-    tab_rank, tab_proj, tab_map, tab_wp = st.tabs([
+    tab_rank, tab_proj, tab_wp, tab_recruit, tab_nil = st.tabs([
         "Power Rankings", "Multi-Year Projections",
-        "Recruiting Map", "Win Probability Simulator",
+        "Win Probability Simulator",
+        "Recruiting Dashboard", "NIL Impact",
     ])
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -311,80 +309,6 @@ def main():
                 height=350, title="Solid = Historical | Dashed = Projected"
             )
             st.altair_chart(traj_chart, use_container_width=True)
-
-    # ══════════════════════════════════════════════════════════════════════════
-    # TAB 4 — Recruiting Map
-    # ══════════════════════════════════════════════════════════════════════════
-    with tab_map:
-        st.subheader("Recruiting Pipeline")
-        st.markdown("Arc from recruit's hometown to their committed school.")
-
-        recruit_years = sorted(map_df["year"].dropna().unique().astype(int).tolist())
-        if not recruit_years:
-            st.info("No recruit data available.")
-        else:
-            # Per-tab filters
-            mc1, mc2 = st.columns(2)
-            with mc1:
-                map_confs = st.multiselect(
-                    "Conferences", all_confs, default=[],
-                    help="Leave empty for all conferences", key="map_confs"
-                )
-            with mc2:
-                map_year = st.select_slider(
-                    "Recruit Class Year", options=recruit_years,
-                    value=recruit_years[-1], key="map_year"
-                )
-            map_filtered = map_df[map_df["year"] == map_year]
-            if map_confs:
-                map_filtered = map_filtered[map_filtered["conference"].isin(map_confs)]
-
-            if map_filtered.empty:
-                st.warning(f"No recruit data for {map_year} with current filters.")
-            else:
-                def get_rgb(team_name):
-                    h = TEAM_COLORS.get(team_name, DEFAULT_COLOR).lstrip("#")
-                    return [int(h[i:i+2], 16) for i in (0, 2, 4)]
-
-                map_filtered = map_filtered.copy()
-                map_filtered["color"] = map_filtered["committedTo"].apply(
-                    lambda t: get_rgb(t) + [160]
-                )
-
-                arc_layer = pdk.Layer(
-                    "ArcLayer",
-                    data=map_filtered,
-                    get_source_position=["recruit_lon", "recruit_lat"],
-                    get_target_position=["team_lon", "team_lat"],
-                    get_source_color=[255, 0, 0, 120],
-                    get_target_color="color",
-                    get_width="stars",
-                    pickable=True,
-                    auto_highlight=True,
-                )
-                scatter_layer = pdk.Layer(
-                    "ScatterplotLayer",
-                    data=map_filtered,
-                    get_position=["team_lon", "team_lat"],
-                    get_color="color",
-                    get_radius=15000,
-                    pickable=True,
-                )
-
-                mid_lat = map_filtered["team_lat"].mean()
-                mid_lon = map_filtered["team_lon"].mean()
-                view = pdk.ViewState(
-                    latitude=mid_lat if not pd.isna(mid_lat) else 39.83,
-                    longitude=mid_lon if not pd.isna(mid_lon) else -98.58,
-                    zoom=3.5, pitch=45,
-                )
-                st.pydeck_chart(pdk.Deck(
-                    layers=[arc_layer, scatter_layer],
-                    initial_view_state=view,
-                    tooltip={"text": "{name} ({stars}★)\nFrom: {city}, {stateProvince}\nTo: {committedTo}"},
-                    map_style=pdk.map_styles.LIGHT,
-                ))
-
 
     # ══════════════════════════════════════════════════════════════════════════
     # TAB 5 — Win Probability Simulator
@@ -630,6 +554,367 @@ def main():
                             st.dataframe(pd.DataFrame(changes), use_container_width=True)
                         else:
                             st.write("No position changes have been made.")
+
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # TAB 6 — Recruiting Dashboard (from alex_branch)
+    # ══════════════════════════════════════════════════════════════════════════
+    with tab_recruit:
+        if dashboard_df is None or recruit_dash_df is None or teams_dash_df is None:
+            st.warning("Recruiting dashboard data not found. Run `app/clean_dashboard_data.py` first.")
+        else:
+            _RD_METRICS = ['averageRating', 'totalRating', 'commits', 'averageStars']
+
+            _RD_METRIC_LABELS = {
+                'averageRating': 'Average Rating',
+                'totalRating':   'Total Rating',
+                'commits':       'Commits',
+                'averageStars':  'Average Stars',
+            }
+
+            _RD_STAR_COLORS = {5: '#FFD700', 4: '#C0C0C0', 3: '#CD7F32', 2: '#888888', 1: '#888888'}
+
+            _RD_POSITIONS_SORT = [
+                'All Positions', 'Defensive Back', 'Defensive Line', 'Linebacker',
+                'Offensive Line', 'Quarterback', 'Receiver', 'Running Back', 'Special Teams',
+            ]
+
+            NIL_YEAR = 2021
+
+            # ── Session state ─────────────────────────────────────────────────────
+            if 'sel_team' not in st.session_state:
+                st.session_state.sel_team = 'Michigan'
+            if 'sel_conf' not in st.session_state:
+                mich_conf = dashboard_df.loc[dashboard_df['team'] == 'Michigan', 'conference']
+                st.session_state.sel_conf = mich_conf.iloc[0] if not mich_conf.empty else 'All Conferences'
+            if 'sel_year' not in st.session_state:
+                st.session_state.sel_year = 2025
+            if 'sel_metric' not in st.session_state:
+                st.session_state.sel_metric = 'averageRating'
+
+            # ── Sidebar filters ───────────────────────────────────────────────────
+            st.sidebar.header('Filters')
+
+            conferences = ['All Conferences'] + sorted(dashboard_df['conference'].dropna().unique())
+            conf_index = conferences.index(st.session_state.sel_conf) if st.session_state.sel_conf in conferences else 0
+            sel_conf = st.sidebar.selectbox('Conference', conferences, index=conf_index)
+            if sel_conf != st.session_state.sel_conf:
+                st.session_state.sel_team = None
+                st.session_state.last_click_coords = None
+            st.session_state.sel_conf = sel_conf
+
+            years = sorted(dashboard_df['year'].dropna().unique())
+            sel_year_value = st.session_state.sel_year if st.session_state.sel_year in years else years[-1]
+            sel_year = st.sidebar.select_slider('Year', options=years, value=sel_year_value)
+            st.session_state.sel_year = sel_year
+
+            metric_index = _RD_METRICS.index(st.session_state.sel_metric) if st.session_state.sel_metric in _RD_METRICS else 0
+            sel_metric = st.sidebar.selectbox('Metric', _RD_METRICS,
+                                              format_func=lambda m: _RD_METRIC_LABELS[m],
+                                              index=metric_index)
+            st.session_state.sel_metric = sel_metric
+
+            # ── Derived column names ──────────────────────────────────────────────
+            school_col = f'school{sel_metric[0].upper()}{sel_metric[1:]}'
+            conf_col   = f'conf{sel_metric[0].upper()}{sel_metric[1:]}'
+            diff_col   = f'{sel_metric}Diff'
+
+            # ── Filter dashboard ──────────────────────────────────────────────────
+            df = dashboard_df[dashboard_df['year'] == sel_year].copy()
+            if sel_conf != 'All Conferences':
+                df = df[df['conference'] == sel_conf]
+
+            # ── Map data: one row per team ────────────────────────────────────────
+            rd_map_df = (
+                df.groupby(['team', 'conference', 'lat', 'lon', 'logo'])
+                .size().reset_index(name='n')
+                .dropna(subset=['lat', 'lon'])
+            )
+
+            # ── Recruits for selected year ────────────────────────────────────────
+            year_recruits = recruit_dash_df[recruit_dash_df['year'] == sel_year].copy()
+
+            # ── Build folium map ──────────────────────────────────────────────────
+            @st.cache_data
+            def build_map(map_df_json, recruits_json, sel_team):
+                map_data = pd.read_json(StringIO(map_df_json))
+                rec_df = pd.read_json(StringIO(recruits_json))
+
+                m = folium.Map(location=[38.5, -96.5], zoom_start=4, tiles='CartoDB positron')
+
+                if sel_team and not rec_df.empty:
+                    team_recruits = rec_df[rec_df['committedTo'] == sel_team]
+                    school_row = map_data[map_data['team'] == sel_team]
+
+                    if not school_row.empty and not team_recruits.empty:
+                        s_lat = school_row.iloc[0]['lat']
+                        s_lon = school_row.iloc[0]['lon']
+
+                        for _, r in team_recruits.iterrows():
+                            stars = int(r.get('stars', 0))
+                            color = _RD_STAR_COLORS.get(stars, '#888888')
+                            star_str = '\u2b50' * stars if stars > 0 else 'N/A'
+
+                            ht_in = r.get('height', None)
+                            ht_str = (f"{int(ht_in)//12}'{int(ht_in)%12}\""
+                                      if pd.notna(ht_in) else 'N/A')
+                            wt = r.get('weight', None)
+                            wt_str = f"{int(wt)} lbs" if pd.notna(wt) else 'N/A'
+                            rank = r.get('ranking', None)
+                            rank_str = f"#{int(rank)}" if pd.notna(rank) else 'N/A'
+                            rating = r.get('rating', None)
+                            rating_str = f"{rating:.4f}" if pd.notna(rating) else 'N/A'
+
+                            tooltip_html = (
+                                f"<b>{r['name']}</b><br>"
+                                f"Position: {r.get('position', 'N/A')}<br>"
+                                f"Stars: {star_str}<br>"
+                                f"Rating: {rating_str}<br>"
+                                f"Ranking: {rank_str}<br>"
+                                f"Hometown: {r.get('city', '')}, {r.get('stateProvince', '')}<br>"
+                                f"Height: {ht_str} &nbsp;|&nbsp; Weight: {wt_str}"
+                            )
+
+                            folium.PolyLine(
+                                locations=[[r['home_lat'], r['home_lon']], [s_lat, s_lon]],
+                                color=color, weight=2, opacity=0.7,
+                                tooltip=folium.Tooltip(tooltip_html, sticky=True),
+                            ).add_to(m)
+
+                            folium.CircleMarker(
+                                location=[r['home_lat'], r['home_lon']],
+                                radius=4, color=color, fill=True,
+                                fill_color=color, fill_opacity=0.9,
+                                tooltip=folium.Tooltip(tooltip_html, sticky=True),
+                            ).add_to(m)
+
+                for _, row in map_data.iterrows():
+                    is_selected = row['team'] == sel_team
+                    has_selection = sel_team is not None
+                    opacity = 1.0 if (is_selected or not has_selection) else 0.25
+                    size = (44, 44) if is_selected else (32, 32)
+
+                    icon_html = (
+                        f"<div style='opacity:{opacity};'>"
+                        f"<img src='{row['logo']}' width='{size[0]}' height='{size[1]}' "
+                        f"style=\"filter:{'drop-shadow(0 0 6px #003087)' if is_selected else 'none'}\"/>"
+                        f"</div>"
+                    )
+                    folium.Marker(
+                        location=[row['lat'], row['lon']],
+                        icon=folium.DivIcon(html=icon_html, icon_size=size,
+                                            icon_anchor=(size[0]//2, size[1]//2)),
+                        tooltip=row['team'],
+                    ).add_to(m)
+
+                return m
+
+            st.subheader('Click a team logo to see its recruiting breakdown')
+
+            recruit_cols = ['committedTo', 'name', 'position', 'stars', 'rating',
+                            'ranking', 'city', 'stateProvince', 'height', 'weight',
+                            'home_lat', 'home_lon']
+
+            m = build_map(
+                rd_map_df.to_json(),
+                year_recruits[recruit_cols].to_json(),
+                st.session_state.sel_team,
+            )
+
+            click_data = st_folium(m, use_container_width=True, height=520, key='team_map')
+
+            if click_data and click_data.get('last_object_clicked_tooltip'):
+                clicked = click_data['last_object_clicked_tooltip']
+                clicked_coords = click_data.get('last_object_clicked')
+
+                if clicked in rd_map_df['team'].values:
+                    if (clicked == st.session_state.sel_team and
+                            clicked_coords == st.session_state.get('last_click_coords')):
+                        st.session_state.sel_team = None
+                        st.session_state.last_click_coords = None
+                    else:
+                        st.session_state.sel_team = clicked
+                        st.session_state.last_click_coords = clicked_coords
+                    st.rerun()
+
+            sel_team = st.session_state.sel_team
+
+            # ── Star-color legend ─────────────────────────────────────────────────
+            if sel_team:
+                legend_parts = ' &nbsp;&nbsp; '.join(
+                    f"<span style='color:{c}; font-size:20px;'>\u25cf</span> {s}\u2605"
+                    for s, c in sorted(_RD_STAR_COLORS.items(), reverse=True)
+                )
+                st.markdown(f"**Line color by recruit star rating:** &nbsp; {legend_parts}",
+                            unsafe_allow_html=True)
+
+            # ── Bar chart ─────────────────────────────────────────────────────────
+            metric_label = _RD_METRIC_LABELS[sel_metric]
+            st.subheader(f'{metric_label} Diff by Position Group')
+
+            if sel_team is None:
+                st.info('Click a team logo on the map to see its position-group breakdown.')
+            else:
+                st.write(f'**{sel_team}** \u00b7 {sel_year} \u00b7 {metric_label}')
+                chart_df = df[df['team'] == sel_team].copy()
+
+                if chart_df.empty:
+                    st.warning(f'No position-group data for {sel_team} in {sel_year}.')
+                else:
+                    chart_df['color'] = chart_df[diff_col].apply(lambda x: 'Above' if x >= 0 else 'Below')
+                    chart_df['positionGroup'] = pd.Categorical(
+                        chart_df['positionGroup'], categories=_RD_POSITIONS_SORT, ordered=True)
+                    chart_df = chart_df.sort_values('positionGroup')
+
+                    bars = alt.Chart(chart_df).mark_bar().encode(
+                        y=alt.Y('positionGroup:N', title='Position Group', sort=_RD_POSITIONS_SORT),
+                        x=alt.X(
+                            f'{diff_col}:Q',
+                            title=f'Diff vs Conference Average ({metric_label})',
+                        ),
+                        color=alt.Color(
+                            'color:N',
+                            scale=alt.Scale(domain=['Above', 'Below'], range=['steelblue', 'tomato']),
+                            legend=alt.Legend(title='vs Conf Avg'),
+                        ),
+                        tooltip=['positionGroup:N', alt.Tooltip(f'{diff_col}:Q', format='.4f')],
+                    )
+
+                    st.altair_chart(alt.layer(bars).properties(height=400), use_container_width=True)
+
+            st.subheader(f'{metric_label} Over Time \u2014 {sel_team} vs Conference Average')
+
+            if sel_team:
+                time_df = dashboard_df[
+                    (dashboard_df['team'] == sel_team) &
+                    (dashboard_df['positionGroup'] == 'All Positions')
+                ].copy()
+
+                if not time_df.empty:
+                    long_df = pd.melt(
+                        time_df,
+                        id_vars=['year'],
+                        value_vars=[school_col, conf_col],
+                        var_name='series',
+                        value_name='value',
+                    )
+                    long_df['series'] = long_df['series'].map({
+                        school_col: sel_team,
+                        conf_col: 'Conference Avg',
+                    })
+
+                    years_all = sorted(dashboard_df['year'].unique())
+
+                    line = alt.Chart(long_df).mark_line(point=True).encode(
+                        x=alt.X('year:O', title='Year', axis=alt.Axis(values=years_all)),
+                        y=alt.Y('value:Q', title=metric_label, scale=alt.Scale(zero=False)),
+                        color=alt.Color(
+                            'series:N',
+                            title='',
+                            scale=alt.Scale(
+                                domain=[sel_team, 'Conference Avg'],
+                                range=['steelblue', 'gray'],
+                            ),
+                        ),
+                        tooltip=[
+                            alt.Tooltip('series:N', title=''),
+                            alt.Tooltip('year:O', title='Year'),
+                            alt.Tooltip('value:Q', title=metric_label, format='.4f'),
+                        ],
+                    )
+
+                    nil_rule = alt.Chart(pd.DataFrame({'year': [NIL_YEAR]})).mark_rule(
+                        color='red', strokeDash=[6, 3], strokeWidth=2,
+                    ).encode(x=alt.X('year:O'))
+
+                    nil_label = alt.Chart(pd.DataFrame({'year': [NIL_YEAR], 'label': ['NIL Era']})).mark_text(
+                        align='left', dx=6, dy=-130,
+                        color='red', fontSize=12, fontWeight='bold',
+                    ).encode(x=alt.X('year:O'), text='label:N')
+
+                    st.altair_chart(
+                        alt.layer(line, nil_rule, nil_label).properties(height=400),
+                        use_container_width=True,
+                    )
+                else:
+                    st.warning(f'No time-series data for {sel_team}.')
+
+            # ── Individual recruit table ──────────────────────────────────────────
+            if sel_team:
+                team_rec = year_recruits[year_recruits['committedTo'] == sel_team].copy()
+                if not team_rec.empty:
+                    with st.expander(f"Individual recruits \u2014 {sel_team} {sel_year} ({len(team_rec)} commits)"):
+                        display_cols = ['ranking', 'name', 'position', 'stars', 'rating',
+                                        'city', 'stateProvince', 'height', 'weight']
+                        available = [c for c in display_cols if c in team_rec.columns]
+                        st.dataframe(
+                            team_rec[available].sort_values('ranking').reset_index(drop=True),
+                            use_container_width=True,
+                        )
+
+            # ── Raw aggregated data ───────────────────────────────────────────────
+            with st.expander('Raw filtered data'):
+                cols = ['team', 'conference', 'positionGroup', 'year', school_col, conf_col, diff_col]
+                st.dataframe(df[cols].reset_index(drop=True), use_container_width=True)
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # TAB 7 — NIL Impact (from alex_branch)
+    # ══════════════════════════════════════════════════════════════════════════
+    with tab_nil:
+        if pre_post_nil_df is None:
+            st.warning("NIL impact data not found. Run `app/clean_dashboard_data.py` first.")
+        else:
+            st.subheader("NIL Impact on College Football Recruiting")
+            st.caption("Post-NIL (2021+) minus Pre-NIL (\u20132020)")
+
+            _NIL_METRICS = ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']
+            TOP_N = 10
+            CONF_COLORS = {"Power 4": "#FFCB05", "G5 / Ind.": "#00274C"}
+
+            sel_nil_metric = st.selectbox('Metric', _NIL_METRICS, key='nil_metric')
+
+            filtered = pre_post_nil_df[pre_post_nil_df['metric'] == sel_nil_metric].copy()
+            winners = filtered[filtered['category'] == 'Winner'].sort_values('delta', ascending=False).head(TOP_N)
+            losers = filtered[filtered['category'] == 'Loser'].sort_values('delta', ascending=True).head(TOP_N)
+
+            rule_df = pd.DataFrame({"v": [0]})
+
+            def panel(df_panel, sort_order, title, title_color):
+                y = alt.Y('team:N', sort=df_panel['team'].tolist(),
+                          axis=alt.Axis(title=None, labelFontSize=12, labelLimit=180))
+                x = alt.X('delta:Q',
+                          axis=alt.Axis(title='Post-NIL minus Pre-NIL', format="+.3f", gridColor="#eee"))
+                bars = alt.Chart(df_panel).mark_bar(
+                    height=20, cornerRadiusTopRight=4, cornerRadiusBottomRight=4
+                ).encode(
+                    x=x, y=y,
+                    color=alt.Color("group:N",
+                                    scale=alt.Scale(domain=list(CONF_COLORS),
+                                                    range=list(CONF_COLORS.values())),
+                                    legend=alt.Legend(title="Conference")),
+                    tooltip=["team:N", "group:N", alt.Tooltip("delta:Q", format="+.4f")],
+                )
+                labels = alt.Chart(df_panel).mark_text(
+                    align="left" if sort_order == "descending" else "right",
+                    dx=5 if sort_order == "descending" else -5,
+                    fontSize=10, color="#333"
+                ).encode(x=x, y=y, text="delta_label:N")
+                rule = alt.Chart(rule_df).mark_rule(color="#aaa", strokeDash=[4, 3]).encode(x="v:Q")
+                return alt.layer(rule, bars, labels).properties(
+                    width=340, height=300,
+                    title=alt.TitleParams(title, color=title_color, fontWeight="bold", fontSize=14),
+                )
+
+            chart = (
+                alt.hconcat(
+                    panel(winners, "descending", "Top 10 Gains", "#2a7a2a"),
+                    panel(losers, "ascending", "Top 10 Losses", "#b22222"),
+                )
+                .configure_view(stroke=None)
+                .configure_axis(domainColor="#ccc")
+            )
+
+            st.altair_chart(chart, use_container_width=False)
 
 
 if __name__ == "__main__":

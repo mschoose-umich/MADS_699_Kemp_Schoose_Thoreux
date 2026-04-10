@@ -59,6 +59,7 @@ def main():
         APP_DIR / "merge_roster_rankings.py",
         APP_DIR / "get_team_starters.py",
         APP_DIR / "build_matchup_features.py",
+        APP_DIR / "clean_dashboard_data.py",
     ]
 
     # Phase 3: Analysis

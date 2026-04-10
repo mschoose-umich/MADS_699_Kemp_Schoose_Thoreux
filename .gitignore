@@ -1,5 +1,7 @@
 # build folders
 venv/
+.venv/
+__pycache__/
 settings.json
 *.pyc
 
@@ -7,9 +9,15 @@ settings.json
 data/
 archive/
 
+# generated output
+output/
+
 # workbook
 workbook.ipynb
 *checkpoint.ipynb
 
 # secrets
 .env
+
+# IDE
+.idea/

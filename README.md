@@ -12,6 +12,9 @@ CFBD_API_KEY=[your key]
 
 An example .env file is included in the repo.
 
+If using a Mac, you will need to use homebrew to install libomp in order for lightgbm to function. Run this command before performing pip install:
+brew install libomp
+
 Install dependencies with:
 pip install -r requirements.txt
 

@@ -3,6 +3,9 @@ Unified pipeline orchestrator.
 
 Validates environment, runs all data collection and processing scripts,
 trains both models, then launches the unified Streamlit dashboard.
+
+Skips data collection scripts if their output files already exist.
+Use --force to re-fetch all data.
 """
 
 import os
@@ -19,6 +22,7 @@ except ImportError:
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
+DATA_DIR = PROJECT_ROOT / "data"
 
 
 def run_step(script_path):
@@ -31,7 +35,18 @@ def run_step(script_path):
         sys.exit(result.returncode)
 
 
+def outputs_exist(file_list):
+    """Check if all expected output files exist and are non-empty."""
+    for f in file_list:
+        p = DATA_DIR / f
+        if not p.exists() or p.stat().st_size == 0:
+            return False
+    return True
+
+
 def main():
+    force = "--force" in sys.argv
+
     env_path = PROJECT_ROOT / ".env"
     if not env_path.exists():
         print(f"ERROR: .env file not found at {env_path}")
@@ -42,44 +57,47 @@ def main():
         print("ERROR: CFBD_API_KEY is missing or empty in .env")
         sys.exit(1)
 
-    # Phase 1: Data collection (order doesn't matter)
-    collection_scripts = [
-        APP_DIR / "get_recruit_data.py",
-        APP_DIR / "get_roster_data.py",
-        APP_DIR / "get_game_results.py",
-        APP_DIR / "get_advanced_metrics.py",
-        APP_DIR / "get_coaches.py",
-        APP_DIR / "get_transfer_portal.py",
-        APP_DIR / "get_position_recruiting.py",
-        APP_DIR / "get_team_locations.py",
+    # Phase 1: Data collection — each script mapped to its output file(s)
+    collection_steps = [
+        (APP_DIR / "get_recruit_data.py",       ["recruit_data.csv"]),
+        (APP_DIR / "get_roster_data.py",        [f"rosters/{y}_rosters.csv" for y in range(2015, 2026)]),
+        (APP_DIR / "get_game_results.py",       ["game_results.csv"]),
+        (APP_DIR / "get_advanced_metrics.py",   ["advanced_metrics.csv"]),
+        (APP_DIR / "get_coaches.py",            ["coaches.csv"]),
+        (APP_DIR / "get_transfer_portal.py",    ["transfer_portal.csv"]),
+        (APP_DIR / "get_position_recruiting.py", ["position_recruiting.csv"]),
+        (APP_DIR / "get_team_locations.py",     ["team_locations.csv"]),
     ]
 
     # Phase 2: Data processing (order matters)
-    processing_scripts = [
-        APP_DIR / "merge_roster_rankings.py",
-        APP_DIR / "get_team_starters.py",
-        APP_DIR / "build_matchup_features.py",
-        APP_DIR / "clean_dashboard_data.py",
+    processing_steps = [
+        (APP_DIR / "merge_roster_rankings.py",  [f"merged_rosters/{y}_rosters.csv" for y in range(2015, 2026)]),
+        (APP_DIR / "get_team_starters.py",      ["starters_by_season.csv"]),
+        (APP_DIR / "build_matchup_features.py", ["Xy_train.csv", "2025_games_clean.csv", "2025_rosters.csv"]),
+        (APP_DIR / "clean_dashboard_data.py",   ["dashboard_df.csv", "recruit_df.csv", "teams_df.csv", "pre_post_nil_df.csv"]),
     ]
 
     # Phase 3: Analysis
-    analysis_scripts = [
-        APP_DIR / "generate_power_rankings.py",
-        APP_DIR / "build_win_model.py",
+    analysis_steps = [
+        (APP_DIR / "generate_power_rankings.py", ["power_rankings_national.csv", "power_rankings_predictions.csv", "model_metrics.json"]),
+        (APP_DIR / "build_win_model.py",         ["production_model.pkl"]),
     ]
 
-    all_scripts = collection_scripts + processing_scripts + analysis_scripts
+    all_steps = collection_steps + processing_steps + analysis_steps
 
-    missing = [str(p) for p in all_scripts if not p.exists()]
-    if missing:
+    missing_scripts = [str(s) for s, _ in all_steps if not s.exists()]
+    if missing_scripts:
         print("ERROR: Missing scripts:")
-        for m in missing:
+        for m in missing_scripts:
             print(f"  - {m}")
         sys.exit(1)
 
     print("CFBD_API_KEY check passed. Starting pipeline...\n")
 
-    for script in all_scripts:
+    for script, expected_outputs in all_steps:
+        if not force and outputs_exist(expected_outputs):
+            print(f"Skipping {script.name} — output files already exist")
+            continue
         run_step(script)
 
     print(f"\n{'=' * 70}")

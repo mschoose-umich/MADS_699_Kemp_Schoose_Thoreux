@@ -2,7 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 import pandas as pd
-import config
+import config 
 
 BASE = "https://api.collegefootballdata.com"
 

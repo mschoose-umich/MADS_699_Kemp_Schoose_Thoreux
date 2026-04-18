@@ -103,10 +103,10 @@ def main():
     hist_years = sorted(rankings[rankings["type"] == "Historical"]["year"].unique())
 
     # ── Tab layout ───────────────────────────────────────────────────────────
-    tab_rank, tab_proj, tab_wp, tab_recruit, tab_nil = st.tabs([
-        "Power Rankings", "Multi-Year Projections",
-        "Win Probability Simulator",
-        "Recruiting Dashboard", "NIL Impact",
+    tab_nil, tab_recruit, tab_rank, tab_wp, tab_proj = st.tabs([
+        "NIL Impact", "Recruiting Dashboard",
+        "Power Rankings",
+        "Win Probability Simulator", "Multi-Year Projections",
     ])
 
     # ══════════════════════════════════════════════════════════════════════════
@@ -592,26 +592,31 @@ def main():
             if 'sel_metric' not in st.session_state:
                 st.session_state.sel_metric = 'averageRating'
 
-            # ── Sidebar filters ───────────────────────────────────────────────────
-            st.sidebar.header('Filters')
-
+            # ── Inline filters ────────────────────────────────────────────────────
             conferences = ['All Conferences'] + sorted(dashboard_df['conference'].dropna().unique())
             conf_index = conferences.index(st.session_state.sel_conf) if st.session_state.sel_conf in conferences else 0
-            sel_conf = st.sidebar.selectbox('Conference', conferences, index=conf_index)
-            if sel_conf != st.session_state.sel_conf:
-                st.session_state.sel_team = None
-                st.session_state.last_click_coords = None
-            st.session_state.sel_conf = sel_conf
-
             years = sorted(dashboard_df['year'].dropna().unique())
             sel_year_value = st.session_state.sel_year if st.session_state.sel_year in years else years[-1]
-            sel_year = st.sidebar.select_slider('Year', options=years, value=sel_year_value)
-            st.session_state.sel_year = sel_year
+            metric_index = _RD_METRICS.index(
+                st.session_state.sel_metric) if st.session_state.sel_metric in _RD_METRICS else 0
 
-            metric_index = _RD_METRICS.index(st.session_state.sel_metric) if st.session_state.sel_metric in _RD_METRICS else 0
-            sel_metric = st.sidebar.selectbox('Metric', _RD_METRICS,
-                                              format_func=lambda m: _RD_METRIC_LABELS[m],
-                                              index=metric_index)
+            f_col1, f_col2, f_col3 = st.columns([2, 2, 2])
+
+            with f_col1:
+                sel_conf = st.selectbox('Conference', conferences, index=conf_index, key='rd_conf')
+                if sel_conf != st.session_state.sel_conf:
+                    st.session_state.sel_team = None
+                    st.session_state.last_click_coords = None
+                st.session_state.sel_conf = sel_conf
+
+            with f_col2:
+                sel_year = st.select_slider('Year', options=years, value=sel_year_value, key='rd_year')
+                st.session_state.sel_year = sel_year
+
+            with f_col3:
+                sel_metric = st.selectbox('Metric', _RD_METRICS,
+                                          format_func=lambda m: _RD_METRIC_LABELS[m],
+                                          index=metric_index, key='rd_metric')
             st.session_state.sel_metric = sel_metric
 
             # ── Derived column names ──────────────────────────────────────────────
@@ -867,15 +872,99 @@ def main():
             st.subheader("NIL Impact on College Football Recruiting")
             st.caption("Post-NIL (2021+) minus Pre-NIL (\u20132020)")
 
-            _NIL_METRICS = ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']
+            _NIL_METRIC_LABELS = {
+                'avg_stars': 'Average Stars',
+                'num_commits': 'Commits',
+                'avg_rating': 'Average Rating',
+                'gini': 'Recruit Inequality (Gini)',
+                'rank': 'Recruiting Rank',
+                'points': 'Total Points',
+            }
+
             TOP_N = 10
             CONF_COLORS = {"Power 4": "#FFCB05", "G5 / Ind.": "#00274C"}
 
-            sel_nil_metric = st.selectbox('Metric', _NIL_METRICS, key='nil_metric')
+            pre_post_agg = pre_post_nil_df.groupby(['team', 'period', 'group'])[
+                ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']].mean().reset_index()
 
-            filtered = pre_post_nil_df[pre_post_nil_df['metric'] == sel_nil_metric].copy()
-            winners = filtered[filtered['category'] == 'Winner'].sort_values('delta', ascending=False).head(TOP_N)
-            losers = filtered[filtered['category'] == 'Loser'].sort_values('delta', ascending=True).head(TOP_N)
+            wide = pre_post_agg.pivot(index=['team', 'group'], columns='period',
+                                  values=['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points'])
+            wide.columns = [f'{col}_{period}' for col, period in wide.columns]
+            wide = wide.reset_index()
+
+            for col in list(_NIL_METRIC_LABELS.keys()):
+                wide[f'diff_{col}'] = wide[f'{col}_post_nil'] - wide[f'{col}_pre_nil']
+                wide[f'diff_{col}_label'] = wide[f'diff_{col}'].apply(lambda x: f'{x:+.3f}')
+
+            pre_post_agg = wide.merge(teams_dash_df, on=['team'], how='left').dropna()
+            pre_post_agg['logo'] = pre_post_agg['logos'].apply(lambda x: ast.literal_eval(x)[0] if pd.notna(x) else None)
+
+            sel_nil_metric = st.selectbox(
+                'Metric', list(_NIL_METRIC_LABELS.keys()),
+                format_func=lambda m: _NIL_METRIC_LABELS[m],
+                key='nil_metric'
+            )
+
+            # line chart ------------------
+
+            st.markdown("#### Metric Over Time by Group")
+
+            trend = (
+                pre_post_nil_df.groupby(['year', 'group'])[sel_nil_metric]
+                .mean()
+                .reset_index()
+                .rename(columns={sel_nil_metric: 'value'})
+            )
+
+            nil_rule = alt.Chart(pd.DataFrame({'year': [NIL_YEAR]})).mark_rule(
+                color='red', strokeDash=[6, 3], strokeWidth=2,
+            ).encode(x=alt.X('year:O'))
+
+            nil_label = alt.Chart(pd.DataFrame({'year': [NIL_YEAR], 'label': ['NIL Era']})).mark_text(
+                align='left', dx=6, dy=-130,
+                color='red', fontSize=12, fontWeight='bold',
+            ).encode(x=alt.X('year:O'), text='label:N')
+
+            lines = alt.Chart(trend).mark_line(strokeWidth=2.5, point=True).encode(
+                x=alt.X('year:O',
+                        scale=alt.Scale(domain=sorted(trend['year'].unique().tolist())),
+                        axis=alt.Axis(labelAngle=0)),
+                y=alt.Y('value:Q',
+                        title=_NIL_METRIC_LABELS[sel_nil_metric],
+                        scale=alt.Scale(domain=[0, trend['value'].max() * 1.1])),
+                color=alt.Color('group:N',
+                                scale=alt.Scale(domain=list(CONF_COLORS),
+                                                range=list(CONF_COLORS.values())),
+                                legend=alt.Legend(title='Group')),
+                tooltip=[
+                    alt.Tooltip('group:N', title='Group'),
+                    alt.Tooltip('year:O', title='Year'),
+                    alt.Tooltip('value:Q', title=_NIL_METRIC_LABELS[sel_nil_metric], format='.3f'),
+                ],
+            )
+
+            st.altair_chart(
+                alt.layer(nil_rule, nil_label, lines).properties(height=350).interactive(),
+                use_container_width=True
+            )
+
+            # bar chart -----------
+
+
+            pre_col = f'{sel_nil_metric}_pre_nil'
+            post_col = f'{sel_nil_metric}_post_nil'
+            diff_col = f'diff_{sel_nil_metric}'
+            label_col = f'diff_{sel_nil_metric}_label'
+
+            # single base df used by both charts
+            base = (
+                pre_post_agg[['team', 'group', 'logo', pre_col, post_col, diff_col, label_col]]
+                .dropna()
+                .rename(columns={diff_col: 'delta', label_col: 'delta_label'})
+            )
+
+            winners = base.nlargest(TOP_N, 'delta')
+            losers = base.nsmallest(TOP_N, 'delta')
 
             rule_df = pd.DataFrame({"v": [0]})
 
@@ -915,6 +1004,95 @@ def main():
             )
 
             st.altair_chart(chart, use_container_width=False)
+
+            # bubble chart ------------------
+            st.markdown("#### School-by-School: Pre-NIL vs. Post-NIL")
+
+            axis_min = 0
+            axis_max = max(base[pre_col].max(), base[post_col].max())
+            diag_df = pd.DataFrame({pre_col: [axis_min, axis_max],
+                                    post_col: [axis_min, axis_max]})
+
+            diag = alt.Chart(diag_df).mark_line(
+                color="#aaa", strokeDash=[5, 4], strokeWidth=1.5
+            ).encode(
+                x=alt.X(f'{pre_col}:Q'),
+                y=alt.Y(f'{post_col}:Q'),
+            )
+
+            circle = alt.Chart(base).mark_circle(
+                opacity=1, size=600, filled=False
+            ).encode(
+                x=alt.X(f'{pre_col}:Q',
+                        title=f'{_NIL_METRIC_LABELS[sel_nil_metric]} — Pre-NIL avg',
+                        axis=alt.Axis(gridColor="#eee", domainColor="#ccc")),
+                y=alt.Y(f'{post_col}:Q',
+                        title=f'{_NIL_METRIC_LABELS[sel_nil_metric]} — Post-NIL avg',
+                        axis=alt.Axis(gridColor="#eee", domainColor="#ccc")),
+                color=alt.Color("group:N",
+                                scale=alt.Scale(domain=list(CONF_COLORS),
+                                                range=list(CONF_COLORS.values())),
+                                legend=alt.Legend(title="Conference")),
+                tooltip=[
+                    alt.Tooltip("team:N", title="Team"),
+                    alt.Tooltip("group:N", title="Group"),
+                    alt.Tooltip(f'{pre_col}:Q', title="Pre-NIL", format=".3f"),
+                    alt.Tooltip(f'{post_col}:Q', title="Post-NIL", format=".3f"),
+                    alt.Tooltip("delta:Q", title="Diff", format="+.3f"),
+                ],
+            )
+
+            logos = alt.Chart(base).mark_image(
+                width=22, height=22,
+            ).encode(
+                x=alt.X(f'{pre_col}:Q'),
+                y=alt.Y(f'{post_col}:Q'),
+                url="logo:N",
+                tooltip=[
+                    alt.Tooltip("team:N", title="Team"),
+                    alt.Tooltip("group:N", title="Group"),
+                    alt.Tooltip(f'{pre_col}:Q', title="Pre-NIL", format=".3f"),
+                    alt.Tooltip(f'{post_col}:Q', title="Post-NIL", format=".3f"),
+                    alt.Tooltip("delta:Q", title="Diff", format="+.3f"),
+                ],
+            )
+
+            bubble_chart = (
+                alt.layer(diag, circle, logos)
+                .properties(height=800, width=800)
+                .interactive()
+                .configure_view(stroke=None)
+                .configure_axis(domainColor="#ccc")
+            )
+
+            st.altair_chart(bubble_chart, use_container_width=False)
+
+            # stacked chart ----------
+            elite_total = recruit_dash_df[recruit_dash_df['stars'] >= 4].groupby('year').size().reset_index(name='total')
+
+            elite = (
+                recruit_dash_df[recruit_dash_df['stars'] >= 4]
+                .groupby(['year', 'group'])
+                .size()
+                .reset_index(name='count')
+                .merge(elite_total, on='year')
+            )
+
+            elite['pct'] = elite['count'] / elite['total'] * 100
+
+            st.altair_chart(
+                alt.Chart(elite).mark_bar().encode(
+                    x=alt.X('year:O', title='Year'),
+                    y=alt.Y('pct:Q', stack=True,
+                            axis=alt.Axis(title='Share of 4 & 5 ★ Recruits (%)', format='.0f', labelExpr="datum.value + '%'")),
+                    color=alt.Color('group:N',
+                                    scale=alt.Scale(domain=list(CONF_COLORS),
+                                                    range=list(CONF_COLORS.values())),
+                                    legend=alt.Legend(title='Group')),
+                    tooltip=['year:O', 'group:N', alt.Tooltip('pct:Q', format='.1f', title='% Elite')],
+                ).properties(height=350),
+                use_container_width=True
+            )
 
 
 if __name__ == "__main__":

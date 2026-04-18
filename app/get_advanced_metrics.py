@@ -21,9 +21,6 @@ headers = {"Authorization": f"Bearer {TOKEN}"}
 start_year = config.season_start
 end_year = config.season_end
 
-# Conferences we are interested in
-target_conferences = ["Big Ten", "SEC", "Big 12", "ACC"]
-
 def get_sp_ratings(year):
     """Fetch SP+ ratings for a specific year."""
     print(f"Fetching SP+ ratings for {year}...")
@@ -57,8 +54,6 @@ def main():
     for year in range(start_year, end_year + 1):
         sp_df = get_sp_ratings(year)
         if not sp_df.empty:
-            # Filter for target conferences
-            sp_df = sp_df[sp_df['conference'].isin(target_conferences)]
             sp_all.append(sp_df)
 
         talent_df = get_talent_composite(year)

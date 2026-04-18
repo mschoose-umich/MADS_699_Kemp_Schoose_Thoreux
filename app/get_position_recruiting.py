@@ -26,8 +26,6 @@ load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 TOKEN = os.getenv("CFBD_API_KEY")
 headers = {"Authorization": f"Bearer {TOKEN}"}
 
-TARGET_CONFERENCES = ["Big Ten", "SEC", "Big 12", "ACC"]
-
 # Map API position group names → short column suffixes
 POSITION_MAP = {
     "Quarterback": "rec_qb",
@@ -40,11 +38,11 @@ POSITION_MAP = {
 }
 
 
-def get_position_recruiting(year, conference):
-    """Fetch position-group recruiting ratings for a conference and year."""
+def get_position_recruiting(year):
+    """Fetch position-group recruiting ratings for a year."""
     r = requests.get(
         f"{BASE}/recruiting/groups",
-        params={"year": year, "conference": conference},
+        params={"startYear": year, "endYear": year},
         headers=headers,
     ).json()
     if isinstance(r, dict) and "message" in r:
@@ -60,17 +58,13 @@ def main():
 
     for year in range(config.season_start, config.season_end + 1):
         print(f"  Fetching position recruiting for {year}...")
-        frames = []
-        for conf in TARGET_CONFERENCES:
-            df = get_position_recruiting(year, conf)
-            if not df.empty:
-                frames.append(df)
+        df = get_position_recruiting(year)
 
-        if not frames:
+        if df.empty:
             print(f"  {year}: no data")
             continue
 
-        year_df = pd.concat(frames, ignore_index=True)
+        year_df = df
         year_df = year_df.drop_duplicates(subset=["team", "positionGroup"])
 
         # Pivot: one row per team, one column per position group

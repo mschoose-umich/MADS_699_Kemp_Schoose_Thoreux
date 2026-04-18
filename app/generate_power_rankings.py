@@ -181,7 +181,8 @@ def load_roster_aggregates(roster_dir=None):
     return pd.DataFrame(records)
 
 
-def compute_rankings(df_flat, roster_agg, best_params):
+def compute_rankings(df_flat, roster_agg, best_params,
+                     ranker=None, ranker_scaler=None, pred_features_override=None):
     """Compute power rankings using walk-forward model scoring.
 
     For each year Y (2016-2025), trains LightGBM on all data from years < Y
@@ -189,8 +190,9 @@ def compute_rankings(df_flat, roster_agg, best_params):
     model's forecast of Year Y+1 performance (i.e., a forward-looking metric).
     Year 2015 uses raw SP+ rating as a fallback.
 
-    Note: predicted_rating represents *projected next-year* performance, not
-    a retrospective assessment of the current season.
+    If a trained LGBMRanker + scaler are provided, final rank columns are
+    derived from ranker scores (better Spearman r); otherwise from
+    predicted_rating.
     """
     df = df_flat.copy()
 
@@ -200,7 +202,10 @@ def compute_rankings(df_flat, roster_agg, best_params):
     df = df.sort_values(["team", "year"])
     df["prior_year_rating"] = df.groupby("team")["rating"].shift(1)
 
-    pred_features = _build_feature_list(df[(df["year"] >= 2016)])
+    if pred_features_override is not None:
+        pred_features = [c for c in pred_features_override if c in df.columns]
+    else:
+        pred_features = _build_feature_list(df[(df["year"] >= 2016)])
 
     all_years = sorted(df["year"].unique())
     scored_frames = []
@@ -213,14 +218,13 @@ def compute_rankings(df_flat, roster_agg, best_params):
             year_df["predicted_rating"] = year_df["rating"].round(2)
         else:
             # Walk-forward: train on all prior years
-            train_df = df[df["year"] < year].dropna(subset=["rating"])
-            # Need next-year rating as target for training
-            train_df = train_df.copy()
+            train_df = df[df["year"] < year].dropna(subset=["rating"]).copy()
             train_df["next_year_rating"] = train_df.groupby("team")["rating"].shift(-1)
-            train_df = train_df.dropna(subset=pred_features + ["next_year_rating"])
+            train_df = train_df.dropna(subset=["next_year_rating"])
+            train_medians_wf = train_df[pred_features].median(numeric_only=True)
+            train_df = fill_features(train_df, pred_features, train_medians_wf)
 
             if len(train_df) < 20:
-                # Not enough training data, fall back to raw rating
                 year_df["predicted_rating"] = year_df["rating"].round(2)
             else:
                 scaler = StandardScaler()
@@ -233,18 +237,13 @@ def compute_rankings(df_flat, roster_agg, best_params):
                 wf_model = lgb.LGBMRegressor(**best_params, verbose=-1, random_state=42)
                 wf_model.fit(X_tr, y_tr)
 
-                # Predict current year
-                year_df["predicted_rating"] = np.nan
-                year_valid = year_df.dropna(subset=pred_features)
-                if len(year_valid) > 0:
-                    X_pred = pd.DataFrame(
-                        scaler.transform(year_valid[pred_features]),
-                        columns=pred_features, index=year_valid.index,
-                    )
-                    year_df.loc[year_valid.index, "predicted_rating"] = (
-                        wf_model.predict(X_pred).round(2)
-                    )
-                # Fill any teams missing features with raw rating
+                # Predict current year — impute with training medians to keep G5 teams
+                year_filled = fill_features(year_df, pred_features, train_medians_wf)
+                X_pred = pd.DataFrame(
+                    scaler.transform(year_filled[pred_features]),
+                    columns=pred_features, index=year_filled.index,
+                )
+                year_df["predicted_rating"] = wf_model.predict(X_pred).round(2)
                 year_df["predicted_rating"] = year_df["predicted_rating"].fillna(
                     year_df["rating"].round(2)
                 )
@@ -253,16 +252,33 @@ def compute_rankings(df_flat, roster_agg, best_params):
 
     df = pd.concat(scored_frames, ignore_index=True)
 
-    # Rank
+    # Rank: prefer ranker scores (ordinal model) when available
+    if ranker is not None and ranker_scaler is not None:
+        feature_medians = df[pred_features].median(numeric_only=True)
+        rank_signal = pd.Series(np.nan, index=df.index)
+        for yr, grp in df.groupby("year"):
+            if grp[pred_features].dropna(how="all").empty:
+                continue
+            scores = score_with_ranker(
+                ranker, ranker_scaler, grp, pred_features, feature_medians
+            )
+            rank_signal.loc[grp.index] = scores
+        df["ranker_score"] = rank_signal.round(4)
+        # For years before the ranker's training horizon, fall back to predicted_rating
+        df["ranker_score"] = df["ranker_score"].fillna(df["predicted_rating"])
+        rank_col = "ranker_score"
+    else:
+        rank_col = "predicted_rating"
+
     df["national_rank"] = (
-        df.groupby("year")["predicted_rating"]
+        df.groupby("year")[rank_col]
         .rank(ascending=False, method="min")
-        .astype(int)
+        .astype("Int64")
     )
     df["conference_rank"] = (
-        df.groupby(["year", "conference"])["predicted_rating"]
+        df.groupby(["year", "conference"])[rank_col]
         .rank(ascending=False, method="min")
-        .astype(int)
+        .astype("Int64")
     )
 
     return df
@@ -328,7 +344,13 @@ def train_lgbm_model(df_flat, roster_agg):
     pred_features = _build_feature_list(train)
     print(f"  Using {len(pred_features)} features: {pred_features}")
 
-    train = train.dropna(subset=pred_features + ["next_year_rating"])
+    # Only drop rows missing the target. Impute missing features with training
+    # medians so G5 teams (which disproportionately lack portal/recruiting data)
+    # stay in the training set — previously this dropna cut training from ~1200
+    # to ~300 rows, biased toward P4.
+    train = train.dropna(subset=["next_year_rating"])
+    train_medians = train[pred_features].median(numeric_only=True)
+    train = fill_features(train, pred_features, train_medians)
 
     X_train = train[pred_features]
     y_train = train["next_year_rating"].values
@@ -447,7 +469,8 @@ def train_lgbm_model(df_flat, roster_agg):
 
 
 def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residual_std,
-                       decay_rate=None, quantile_std_map=None):
+                       decay_rate=None, quantile_std_map=None,
+                       ranker=None, ranker_scaler=None, conformal_half_width=None):
     """Generate chained multi-year predictions with ensemble decay and prediction intervals.
 
     If quantile_std_map is provided (heteroskedastic case), interval widths vary by
@@ -463,8 +486,19 @@ def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residu
     df = df.sort_values(["team", "year"])
     df["prior_year_rating"] = df.groupby("team")["rating"].shift(1)
 
+    # Per-feature medians from the full historical sample — used to impute
+    # missing features so Group-of-5 / Independent teams aren't excluded from
+    # predictions just because they lack portal or position-recruiting coverage.
+    feature_medians = df[pred_features].median(numeric_only=True)
+
+    def _impute(frame):
+        return frame.assign(**{
+            c: frame[c].fillna(feature_medians[c]) for c in pred_features
+        })
+
     # --- Validation: predict 2025 from 2024 features ---
-    val_input = df[df["year"] == 2024].dropna(subset=pred_features).copy()
+    val_input = _impute(df[df["year"] == 2024].copy())
+    val_input = val_input.dropna(subset=["rating"])  # need a team to exist
     X_val = pd.DataFrame(
         scaler.transform(val_input[pred_features]),
         columns=pred_features, index=val_input.index,
@@ -478,7 +512,7 @@ def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residu
     )
     val_results = val_results.merge(actual_2025, on="team", how="inner")
     corr = val_results["predicted_rating"].corr(val_results["actual_rating"])
-    print(f"  2025 validation correlation: {corr:.3f}")
+    print(f"  2025 validation correlation: {corr:.3f} (n={len(val_results)})")
 
     # --- Multi-year chained predictions ---
     if decay_rate is None:
@@ -487,8 +521,11 @@ def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residu
     confidence_level = config.confidence_level
     alpha = 1 - confidence_level
 
-    base = df[df["year"] == 2025].dropna(subset=pred_features).copy()
+    base = _impute(df[df["year"] == 2025].copy())
+    base = base.dropna(subset=["rating"])
     league_mean = df[df["year"] == 2025]["rating"].mean()
+    print(f"  Projecting {len(base)} teams forward "
+          f"({base['conference'].nunique()} conferences)")
 
     all_predictions = []
     current_base = base.copy()
@@ -504,29 +541,34 @@ def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residu
         decay_factor = decay_rate ** k
         decayed_preds = decay_factor * raw_preds + (1 - decay_factor) * league_mean
 
-        # Bootstrap prediction intervals — quantile-based widths if heteroskedastic
-        rng = np.random.RandomState(42 + k)
-        if quantile_std_map:
-            # Per-team interval width based on which decile their prediction falls in
-            pred_deciles = pd.qcut(
-                pd.Series(decayed_preds), q=10, labels=False, duplicates="drop"
-            ).fillna(4).astype(int).values
-            per_team_std = np.array([
-                quantile_std_map.get(int(d), residual_std) * np.sqrt(k)
-                for d in pred_deciles
-            ])
-            bootstrap_preds = np.array([
-                decayed_preds + rng.normal(0, per_team_std)
-                for _ in range(bootstrap_n)
-            ])
+        # Prediction intervals — conformal if available (empirical residual quantile),
+        # else fall back to the original Gaussian bootstrap. sqrt(k) scales horizon.
+        if conformal_half_width is not None:
+            half_width = conformal_half_width * np.sqrt(k)
+            lower = decayed_preds - half_width
+            upper = decayed_preds + half_width
         else:
-            horizon_std = residual_std * np.sqrt(k)
-            bootstrap_preds = np.array([
-                decayed_preds + rng.normal(0, horizon_std, size=len(decayed_preds))
-                for _ in range(bootstrap_n)
-            ])
-        lower = np.percentile(bootstrap_preds, alpha / 2 * 100, axis=0)
-        upper = np.percentile(bootstrap_preds, (1 - alpha / 2) * 100, axis=0)
+            rng = np.random.RandomState(42 + k)
+            if quantile_std_map:
+                pred_deciles = pd.qcut(
+                    pd.Series(decayed_preds), q=10, labels=False, duplicates="drop"
+                ).fillna(4).astype(int).values
+                per_team_std = np.array([
+                    quantile_std_map.get(int(d), residual_std) * np.sqrt(k)
+                    for d in pred_deciles
+                ])
+                bootstrap_preds = np.array([
+                    decayed_preds + rng.normal(0, per_team_std)
+                    for _ in range(bootstrap_n)
+                ])
+            else:
+                horizon_std = residual_std * np.sqrt(k)
+                bootstrap_preds = np.array([
+                    decayed_preds + rng.normal(0, horizon_std, size=len(decayed_preds))
+                    for _ in range(bootstrap_n)
+                ])
+            lower = np.percentile(bootstrap_preds, alpha / 2 * 100, axis=0)
+            upper = np.percentile(bootstrap_preds, (1 - alpha / 2) * 100, axis=0)
 
         year_result = current_base[["team", "conference"]].copy()
         year_result["year"] = pred_year
@@ -534,15 +576,23 @@ def predict_multi_year(model, scaler, df_flat, roster_agg, pred_features, residu
         year_result["pred_lower"] = lower.round(2)
         year_result["pred_upper"] = upper.round(2)
 
+        # Ranking: use the LGBMRanker's ordinal scores when available
+        # (Spearman r ~0.87 vs regression ~0.75 on 2025 val)
+        if ranker is not None and ranker_scaler is not None:
+            ranker_scores = score_with_ranker(
+                ranker, ranker_scaler, current_base, pred_features, feature_medians
+            )
+            year_result["ranker_score"] = ranker_scores
+            rank_series = pd.Series(ranker_scores, index=year_result.index)
+        else:
+            rank_series = year_result["predicted_rating"]
+
         year_result["national_rank"] = (
-            year_result["predicted_rating"]
-            .rank(ascending=False, method="min")
-            .astype(int)
+            rank_series.rank(ascending=False, method="min").astype("Int64")
         )
         year_result["conference_rank"] = (
-            year_result.groupby("conference")["predicted_rating"]
-            .rank(ascending=False, method="min")
-            .astype(int)
+            rank_series.groupby(year_result["conference"])
+            .rank(ascending=False, method="min").astype("Int64")
         )
 
         all_predictions.append(year_result)
@@ -839,7 +889,10 @@ def train_lgbm_ranker(df_flat, roster_agg, pred_features, best_params):
     df["next_year_rating"] = df.groupby("team")["rating"].shift(-1)
 
     train = df[(df["year"] >= 2016) & (df["year"] <= 2024)].copy()
-    train = train.dropna(subset=pred_features + ["next_year_rating"])
+    # Keep all FBS teams — only drop if missing target. Impute features.
+    train = train.dropna(subset=["next_year_rating"])
+    train_medians = train[pred_features].median(numeric_only=True)
+    train = fill_features(train, pred_features, train_medians)
 
     # Relevance labels: decile of next_year_rating within each year (0=worst, 9=best)
     train["rank_label"] = train.groupby("year")["next_year_rating"].transform(
@@ -867,7 +920,8 @@ def train_lgbm_ranker(df_flat, roster_agg, pred_features, best_params):
     ranker.fit(X_tr, y_tr, group=group_sizes)
 
     # Validate on 2025: Spearman r between ranker scores and actual SP+
-    val_df = df[df["year"] == 2024].dropna(subset=pred_features).copy()
+    val_df = df[df["year"] == 2024].copy()
+    val_df = fill_features(val_df, pred_features, train_medians)
     actual_2025 = df[df["year"] == 2025][["team", "rating"]].rename(
         columns={"rating": "actual_rating"}
     )
@@ -883,6 +937,25 @@ def train_lgbm_ranker(df_flat, roster_agg, pred_features, best_params):
     ranker_sp, _ = spearmanr(val_df["ranker_score"], val_df["actual_rating"])
     print(f"  LGBMRanker 2025 Spearman r: {ranker_sp:.4f}")
     return ranker, ranker_scaler, float(ranker_sp)
+
+
+def score_with_ranker(ranker, ranker_scaler, frame, pred_features, feature_medians):
+    """Apply a trained LGBMRanker to a frame of team-years, imputing missing
+    features with the provided medians. Returns a 1-D numpy array of scores."""
+    filled = frame[pred_features].copy()
+    for c in pred_features:
+        filled[c] = filled[c].fillna(feature_medians[c])
+    X = ranker_scaler.transform(filled)
+    return ranker.predict(X)
+
+
+def fill_features(frame, pred_features, medians):
+    """Median-impute the specified features in-place on a copy of frame."""
+    out = frame.copy()
+    for c in pred_features:
+        if c in out.columns:
+            out[c] = out[c].fillna(medians[c])
+    return out
 
 
 def compute_rolling_validation(df_flat, roster_agg, best_params, pred_features, val_years=None):
@@ -906,12 +979,15 @@ def compute_rolling_validation(df_flat, roster_agg, best_params, pred_features, 
     per_year_rmse = {}
     all_y_true = []
     all_y_pred = []
+    all_conferences = []
 
     for Y in val_years:
         # Train on rows where year in [2016, Y-2] with target = next_year_rating
         train_df = df[(df["year"] >= 2016) & (df["year"] <= Y - 2)].copy()
         train_df["next_year_rating"] = train_df.groupby("team")["rating"].shift(-1)
-        train_df = train_df.dropna(subset=pred_features + ["next_year_rating"])
+        train_df = train_df.dropna(subset=["next_year_rating"])
+        fold_medians = train_df[pred_features].median(numeric_only=True)
+        train_df = fill_features(train_df, pred_features, fold_medians)
 
         if len(train_df) < 10:
             print(f"  Rolling val {Y}: skipped (insufficient training data)")
@@ -924,9 +1000,12 @@ def compute_rolling_validation(df_flat, roster_agg, best_params, pred_features, 
         fold_model = lgb.LGBMRegressor(**best_params, verbose=-1, random_state=42)
         fold_model.fit(X_tr, y_tr)
 
-        # Predict from year Y-1 features → year Y
-        val_df = df[df["year"] == Y - 1].dropna(subset=pred_features).copy()
-        actual_df = df[df["year"] == Y][["team", "rating"]].rename(columns={"rating": "actual"})
+        # Predict from year Y-1 features → year Y (impute so G5 teams stay in)
+        val_df = df[df["year"] == Y - 1].copy()
+        val_df = fill_features(val_df, pred_features, fold_medians)
+        actual_df = df[df["year"] == Y][["team", "rating", "conference"]].rename(
+            columns={"rating": "actual"}
+        )
 
         if val_df.empty:
             continue
@@ -943,12 +1022,36 @@ def compute_rolling_validation(df_flat, roster_agg, best_params, pred_features, 
         per_year_rmse[Y] = round(rmse, 4)
         all_y_true.extend(val_df["actual"].tolist())
         all_y_pred.extend(val_df["predicted"].tolist())
+        all_conferences.extend(val_df["conference"].tolist())
         print(f"  Rolling val {Y}: RMSE={rmse:.3f} ({len(val_df)} teams)")
 
     overall = float(np.sqrt(mean_squared_error(all_y_true, all_y_pred))) if all_y_true else None
+
+    # Conformal calibration: empirical 90th percentile of |residuals|
+    # becomes the half-width for 90% intervals at horizon k=1.
+    residuals = np.array(all_y_true) - np.array(all_y_pred) if all_y_true else np.array([])
+    conformal_half_width = (
+        float(np.percentile(np.abs(residuals), 90)) if len(residuals) else None
+    )
+
+    # Slice-based RMSE by conference (Huyen ch.6)
+    by_conference = {}
+    if all_y_true:
+        slice_df = pd.DataFrame({
+            "actual": all_y_true, "predicted": all_y_pred, "conference": all_conferences,
+        })
+        for conf, grp in slice_df.groupby("conference"):
+            if len(grp) >= 5:
+                by_conference[conf] = {
+                    "rmse": round(float(np.sqrt(mean_squared_error(grp["actual"], grp["predicted"]))), 4),
+                    "n": int(len(grp)),
+                }
+
     return {
         "per_year": per_year_rmse,
         "overall_rmse": round(overall, 4) if overall is not None else None,
+        "conformal_half_width": round(conformal_half_width, 4) if conformal_half_width else None,
+        "by_conference": by_conference,
     }
 
 
@@ -984,11 +1087,41 @@ def main():
 
     # 4b. Train LightGBM Ranker (ordinal model) — compare Spearman r to regression
     print("\nTraining LightGBM Ranker (ordinal model)...")
-    _, _, ranker_spearman = train_lgbm_ranker(df_flat, roster_agg, pred_features, best_params)
+    ranker, ranker_scaler, ranker_spearman = train_lgbm_ranker(
+        df_flat, roster_agg, pred_features, best_params
+    )
+
+    # 4c. Rolling out-of-sample validation — also calibrates conformal intervals
+    print("\nComputing rolling out-of-sample validation...")
+    rolling_val = compute_rolling_validation(df_flat, roster_agg, best_params, pred_features)
+    conformal_q = rolling_val.get("conformal_half_width")
+    if conformal_q:
+        print(f"  Conformal 90% half-width (rolling val): {conformal_q:.3f}")
+
+    # 4d. Pick whichever model (regression or ranker) has better 2024→2025 Spearman
+    # for producing the final rank ordering. Median-impute to match training.
+    _dv = df_flat.merge(roster_agg, on=["year", "team"], how="left") if not roster_agg.empty else df_flat.copy()
+    _dv = _dv.sort_values(["team", "year"])
+    _dv["prior_year_rating"] = _dv.groupby("team")["rating"].shift(1)
+    _medians = _dv[pred_features].median(numeric_only=True)
+    _val24 = fill_features(_dv[_dv["year"] == 2024], pred_features, _medians)
+    _act25 = _dv[_dv["year"] == 2025][["team", "rating"]]
+    _reg_preds = best_model.predict(scaler.transform(_val24[pred_features]))
+    _merged = _val24[["team"]].assign(pred=_reg_preds).merge(_act25, on="team", how="inner")
+    reg_spearman = float(spearmanr(_merged["pred"], _merged["rating"])[0])
+    print(f"  Model selection: regression Spearman={reg_spearman:.4f}, "
+          f"ranker Spearman={ranker_spearman:.4f}")
+    use_ranker = ranker_spearman is not None and ranker_spearman > reg_spearman
+    print(f"  -> Using {'RANKER' if use_ranker else 'REGRESSION'} for rank ordering")
 
     # 5. Walk-forward historical rankings
     print("\nComputing walk-forward power rankings...")
-    df = compute_rankings(df_flat, roster_agg, best_params)
+    df = compute_rankings(
+        df_flat, roster_agg, best_params,
+        ranker=ranker if use_ranker else None,
+        ranker_scaler=ranker_scaler if use_ranker else None,
+        pred_features_override=pred_features,
+    )
 
     output_cols_national = ["year", "team", "conference", "predicted_rating", "national_rank"]
     output_cols_conference = ["year", "team", "conference", "predicted_rating", "conference_rank"]
@@ -1007,11 +1140,14 @@ def main():
     print(f"\n=== {latest} National Top 10 ===")
     print(top10.to_string(index=False))
 
-    # 5. Multi-year predictions (2026-2028)
+    # 5. Multi-year predictions (2026-2028) — conformal intervals, ranker-based ranks
     print(f"\nGenerating {config.prediction_years} predictions...")
     predictions, val_results = predict_multi_year(
         best_model, scaler, df_flat, roster_agg, pred_features, residual_std,
         decay_rate=estimated_decay, quantile_std_map=quantile_std_map,
+        ranker=ranker if use_ranker else None,
+        ranker_scaler=ranker_scaler if use_ranker else None,
+        conformal_half_width=conformal_q,
     )
 
     pred_output = predictions[
@@ -1029,8 +1165,10 @@ def main():
         val_results["actual_rating"].values,
         val_results["predicted_rating"].values,
     )
-    val_lower = val_results["predicted_rating"].values - 1.645 * residual_std
-    val_upper = val_results["predicted_rating"].values + 1.645 * residual_std
+    # Report coverage under both the Gaussian (legacy) and conformal (new) widths
+    half_width = conformal_q if conformal_q else 1.645 * residual_std
+    val_lower = val_results["predicted_rating"].values - half_width
+    val_upper = val_results["predicted_rating"].values + half_width
     interval_metrics = compute_evaluation_metrics(
         val_results["actual_rating"].values,
         val_results["predicted_rating"].values,
@@ -1057,12 +1195,29 @@ def main():
         val_metrics["baseline_r2"] = round(float(bl_r2), 4)
         print(f"\n  Persistence baseline (2025 validation): RMSE={bl_rmse:.3f}, R²={bl_r2:.3f}")
 
-    # Rolling out-of-sample validation (2020-2025)
-    print("\nComputing rolling out-of-sample validation...")
-    rolling_val = compute_rolling_validation(df_flat, roster_agg, best_params, pred_features)
+    # Rolling out-of-sample validation already computed above — reuse results
     val_metrics["rolling_val_rmse"] = rolling_val["overall_rmse"]
     val_metrics["rolling_val_per_year"] = rolling_val["per_year"]
     val_metrics["estimated_decay_rate"] = round(estimated_decay, 4)
+    if rolling_val.get("conformal_half_width"):
+        val_metrics["conformal_half_width"] = round(rolling_val["conformal_half_width"], 4)
+
+    # Slice-based evaluation by conference (Huyen, Designing ML Systems ch.6)
+    slice_metrics = {"by_conference_rolling_val": rolling_val.get("by_conference", {})}
+    if not val_results.empty and "conference" in val_results.columns:
+        by_conf_2025 = {}
+        for conf, grp in val_results.groupby("conference"):
+            if len(grp) >= 3:
+                sp_r, _ = spearmanr(grp["predicted_rating"], grp["actual_rating"])
+                by_conf_2025[conf] = {
+                    "rmse": round(float(np.sqrt(mean_squared_error(
+                        grp["actual_rating"], grp["predicted_rating"]
+                    ))), 4),
+                    "spearman_r": round(float(sp_r), 4) if not np.isnan(sp_r) else None,
+                    "n": int(len(grp)),
+                }
+        slice_metrics["by_conference_2025_val"] = by_conf_2025
+    val_metrics["slice_metrics"] = slice_metrics
     if ranker_spearman is not None:
         val_metrics["ranker_spearman_r"] = round(ranker_spearman, 4)
         reg_sp = val_metrics.get("spearman_r", None)

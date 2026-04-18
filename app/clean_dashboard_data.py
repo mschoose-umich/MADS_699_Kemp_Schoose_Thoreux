@@ -183,30 +183,7 @@ def pre_post_nil(recruit_df):
         lambda y: 'pre_nil' if y < 2021 else 'post_nil'
     )
 
-    pre_post = recruit_df_agg.groupby(['team', 'period', 'group'])[
-        ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']].mean().reset_index()
-
-    wide = pre_post.pivot(index=['team', 'group'], columns='period',
-                          values=['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points'])
-    wide.columns = [f'{col}_{period}' for col, period in wide.columns]
-    wide = wide.reset_index()
-    nil_metrics = ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']
-
-    for col in nil_metrics:
-        wide[f'diff_{col}'] = wide[f'{col}_post_nil'] - wide[f'{col}_pre_nil']
-
-    TOP_N = 10
-    rows = []
-    for col in nil_metrics:
-        sub = wide[['team', 'group', f'diff_{col}']].rename(columns={f'diff_{col}': 'delta'})
-        sub["metric"] = col
-        rows.append(sub.nlargest(TOP_N, 'delta').assign(category='Winner'))
-        rows.append(sub.nsmallest(TOP_N, 'delta').assign(category='Loser'))
-
-    long = pd.concat(rows, ignore_index=True)
-    long['delta_label'] = long['delta'].apply(lambda x: f'{x:+.3f}')
-
-    return long
+    return recruit_df_agg
 
 
 def main():

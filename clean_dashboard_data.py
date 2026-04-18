@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import requests
 import json
-import config
+import app.config as config
 import ast
 from pygini import gini
 
@@ -93,7 +93,20 @@ def get_lat_lon(df, loc_colname, lat_colname='lat', lon_colname='lon'):
 
 conf_map = get_team_conferences(start_year=2009, end_year=2025)
 
-def clean_recruits():
+
+
+def clean_teams():
+    teams_df = pd.read_csv('data/teams.csv')
+    teams_df = (teams_df
+                .rename({'school': 'team'}, axis=1)
+                .dropna()
+                .drop_duplicates(subset=['team']))
+
+    teams_df = get_lat_lon(teams_df, 'location')
+
+    return teams_df
+
+def clean_recruits(conf_map):
     recruit_df = pd.read_csv('data/recruit_data.csv')
 
     recruit_df['conference'] = recruit_df.apply(lambda r: conf_map.get((r["committedTo"], r["year"])), axis=1)
@@ -104,6 +117,7 @@ def clean_recruits():
     recruit_df = get_lat_lon(recruit_df, 'hometownInfo', 'home_lat', 'home_lon')
     recruit_df = recruit_df.dropna(subset=['home_lat', 'home_lon', 'committedTo'])
     recruit_df['stars'] = recruit_df['stars'].fillna(0).astype(int)
+
 
     return recruit_df
 
@@ -117,22 +131,30 @@ def clean_recruiting_groups():
 
     teams_df = get_lat_lon(teams_df, 'location')
 
-    conf_year = (
-        recruit_groups_df
-        .groupby(['conference', 'positionGroup', 'year'])[METRICS]
-        .mean().reset_index()
-        .rename(columns={m: f'conf{m[0].upper()}{m[1:]}' for m in METRICS})
-    )
+    school_metrics = {m: f'school{m[0].upper()}{m[1:]}' for m in METRICS}
+    conf_metrics = {f'school{m[0].upper()}{m[1:]}': f'conf{m[0].upper()}{m[1:]}' for m in METRICS}
 
     recruit_groups_agg = (
         recruit_groups_df
         .groupby(['team', 'conference', 'positionGroup', 'year'])[METRICS]
-        .mean().reset_index()
-        .rename(columns={m: f'school{m[0].upper()}{m[1:]}' for m in METRICS})
-        .merge(conf_year, on=['conference', 'positionGroup', 'year'])
+        .agg({
+            'averageRating':'mean',
+            'totalRating':'sum',
+            'commits':'sum',
+            'averageStars':'mean'
+        }).reset_index()
+        .rename(columns=school_metrics)
     )
 
-    dashboard_df = recruit_groups_agg.merge(teams_df, on=['team', 'conference']).drop_duplicates(
+    conf_year = (
+        recruit_groups_agg
+        .groupby(['conference', 'positionGroup', 'year'])[list(school_metrics.values())]
+        .mean().reset_index()
+        .rename(columns=conf_metrics)
+    )
+
+    dashboard_df = recruit_groups_agg.merge(conf_year, on=['conference', 'positionGroup', 'year']
+                                        ).merge(teams_df, on=['team', 'conference']).drop_duplicates(
         subset=['team', 'conference', 'positionGroup', 'year'])
     dashboard_df['logo'] = dashboard_df['logos'].apply(lambda x: ast.literal_eval(x)[0])
 
@@ -148,7 +170,7 @@ def pre_post_nil(recruit_df):
         lambda x: np.array(x, dtype=float)).reset_index()
     recruit_df_gini['gini'] = recruit_df_gini['rating'].apply(lambda r: gini(r))
 
-    teams_df = pd.read_csv('data/recruit_teams.csv')
+    recruit_teams_df = pd.read_csv('data/recruit_teams.csv')
 
     recruit_df_agg = recruit_df.dropna(subset=['rating', 'committedTo']).groupby(
         ['year', 'committedTo', 'conference', 'group']).agg(
@@ -159,41 +181,18 @@ def pre_post_nil(recruit_df):
 
     recruit_df_agg = recruit_df_agg.merge(
         recruit_df_gini, how='left', on=['year', 'committedTo']).drop(
-        'rating',axis=1).rename({'committedTo': 'team'}, axis=1)
+        'rating', axis=1).rename({'committedTo': 'team'}, axis=1)
 
-    recruit_df_agg = recruit_df_agg.merge(teams_df[['year', 'team', 'rank', 'points']], on=['year', 'team'], how='left')
+    recruit_df_agg = recruit_df_agg.merge(
+        recruit_teams_df[['year', 'team', 'rank', 'points']], on=['year', 'team'], how='left')
 
     recruit_df_agg['period'] = recruit_df_agg['year'].apply(
-        lambda y: f'pre_nil' if y < 2021 else f'post_nil'
-    )
+        lambda y: 'pre_nil' if y < 2021 else 'post_nil')
 
-    pre_post_nil = recruit_df_agg.groupby(['team', 'period', 'group'])[
-        ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']].mean().reset_index()
-
-    wide = pre_post_nil.pivot(index=['team', 'group'], columns='period',
-                              values=['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points'])
-    wide.columns = [f'{col}_{period}' for col, period in wide.columns]
-    wide = wide.reset_index()
-    METRICS = ['avg_stars', 'num_commits', 'avg_rating', 'gini', 'rank', 'points']
-
-    for col in METRICS:
-        wide[f'diff_{col}'] = wide[f'{col}_post_nil'] - wide[f'{col}_pre_nil']
-
-    TOP_N = 10
-    rows = []
-    for col in METRICS:
-        sub = wide[['team', 'group', f'diff_{col}']].rename(columns={f'diff_{col}': 'delta'})
-        sub["metric"] = col
-        rows.append(sub.nlargest(TOP_N, 'delta').assign(category='Winner'))
-        rows.append(sub.nsmallest(TOP_N, 'delta').assign(category='Loser'))
-
-    long = pd.concat(rows, ignore_index=True)
-    long['delta_label'] = long['delta'].apply(lambda x: f'{x:+.3f}')
-
-    return long
+    return recruit_df_agg
 
 dashboard_df, teams_df = clean_recruiting_groups()
-recruits_df = clean_recruits()
+recruits_df = clean_recruits(conf_map)
 pre_post_nil_df = pre_post_nil(recruits_df)
 
 dashboard_df.to_csv('data/dashboard_df.csv', index=False)

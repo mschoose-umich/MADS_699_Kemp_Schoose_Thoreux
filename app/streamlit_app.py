@@ -395,6 +395,37 @@ def main():
                 return pd.Series(probs, index=valid_idx), valid_idx, skipped
 
             st.title("College Football Win Probability Simulator")
+            with st.expander("User Guide and Position Acronyms", expanded=False):
+                st.markdown(
+                    """
+                    The roster boxes use common football position acronyms:
+
+                    | Acronym | Position |
+                    | --- | --- |
+                    | QB | Quarterback |
+                    | RB | Running Back |
+                    | WR | Wide Receiver |
+                    | TE | Tight End |
+                    | OL | Offensive Line |
+                    | DL | Defensive Line |
+                    | LB | Linebacker |
+                    | DB | Defensive Back |
+                    | PK | Placekicker |
+                    | P | Punter |
+
+                    For positions with multiple selections, such as OL1 and OL2,
+                    each numbered box represents an individual player at that
+                    position group. For example, OL1 through OL5 represent five
+                    separate offensive linemen, while WR1 and WR2 represent two
+                    separate wide receivers.
+
+                    Roster data was not available for every team, so the
+                    schedule shown for an individual team may be incomplete if
+                    roster data was unavailable for some of its opponents. This
+                    is especially impactful for smaller teams; for example, only
+                    2 of Abilene Christian's opponents had roster data available.
+                    """
+                )
 
             wp_teams = sorted(
                 set(wp_games["homeTeam"]).union(set(wp_games["awayTeam"]))

@@ -1,0 +1,1441 @@
+year,team,coach_name,coach_tenure,is_first_year_coach
+2015,Air Force,,5,0
+2016,Air Force,,6,0
+2017,Air Force,,7,0
+2018,Air Force,,8,0
+2019,Air Force,,9,0
+2020,Air Force,,10,0
+2021,Air Force,,11,0
+2022,Air Force,,12,0
+2023,Air Force,,13,0
+2024,Air Force,,14,0
+2025,Air Force,,15,0
+2015,Akron,,5,0
+2016,Akron,,6,0
+2017,Akron,,7,0
+2018,Akron,,8,0
+2019,Akron,,9,0
+2020,Akron,,10,0
+2021,Akron,,11,0
+2022,Akron,,12,0
+2023,Akron,,13,0
+2024,Akron,,14,0
+2025,Akron,,15,0
+2015,Alabama,,5,0
+2016,Alabama,,6,0
+2017,Alabama,,7,0
+2018,Alabama,,8,0
+2019,Alabama,,9,0
+2020,Alabama,,10,0
+2021,Alabama,,11,0
+2022,Alabama,,12,0
+2023,Alabama,,13,0
+2024,Alabama,,14,0
+2025,Alabama,,15,0
+2015,App State,,1,0
+2016,App State,,2,0
+2017,App State,,3,0
+2018,App State,,4,0
+2019,App State,,5,0
+2020,App State,,6,0
+2021,App State,,7,0
+2022,App State,,8,0
+2023,App State,,9,0
+2024,App State,,10,0
+2025,App State,,11,0
+2015,Arizona,,5,0
+2016,Arizona,,6,0
+2017,Arizona,,7,0
+2018,Arizona,,8,0
+2019,Arizona,,9,0
+2020,Arizona,,10,0
+2021,Arizona,,11,0
+2022,Arizona,,12,0
+2023,Arizona,,13,0
+2024,Arizona,,14,0
+2025,Arizona,,15,0
+2015,Arizona State,,5,0
+2016,Arizona State,,6,0
+2017,Arizona State,,7,0
+2018,Arizona State,,8,0
+2019,Arizona State,,9,0
+2020,Arizona State,,10,0
+2021,Arizona State,,11,0
+2022,Arizona State,,12,0
+2023,Arizona State,,13,0
+2024,Arizona State,,14,0
+2025,Arizona State,,15,0
+2015,Arkansas,,5,0
+2016,Arkansas,,6,0
+2017,Arkansas,,7,0
+2018,Arkansas,,8,0
+2019,Arkansas,,9,0
+2020,Arkansas,,10,0
+2021,Arkansas,,11,0
+2022,Arkansas,,12,0
+2023,Arkansas,,13,0
+2024,Arkansas,,14,0
+2025,Arkansas,,15,0
+2015,Arkansas State,,5,0
+2016,Arkansas State,,6,0
+2017,Arkansas State,,7,0
+2018,Arkansas State,,8,0
+2019,Arkansas State,,9,0
+2020,Arkansas State,,10,0
+2021,Arkansas State,,11,0
+2022,Arkansas State,,12,0
+2023,Arkansas State,,13,0
+2024,Arkansas State,,14,0
+2025,Arkansas State,,15,0
+2015,Army,,5,0
+2016,Army,,6,0
+2017,Army,,7,0
+2018,Army,,8,0
+2019,Army,,9,0
+2020,Army,,10,0
+2021,Army,,11,0
+2022,Army,,12,0
+2023,Army,,13,0
+2024,Army,,14,0
+2025,Army,,15,0
+2015,Auburn,,5,0
+2016,Auburn,,6,0
+2017,Auburn,,7,0
+2018,Auburn,,8,0
+2019,Auburn,,9,0
+2020,Auburn,,10,0
+2021,Auburn,,11,0
+2022,Auburn,,12,0
+2023,Auburn,,13,0
+2024,Auburn,,14,0
+2025,Auburn,,15,0
+2015,BYU,,5,0
+2016,BYU,,6,0
+2017,BYU,,7,0
+2018,BYU,,8,0
+2019,BYU,,9,0
+2020,BYU,,10,0
+2021,BYU,,11,0
+2022,BYU,,12,0
+2023,BYU,,13,0
+2024,BYU,,14,0
+2025,BYU,,15,0
+2015,Ball State,,5,0
+2016,Ball State,,6,0
+2017,Ball State,,7,0
+2018,Ball State,,8,0
+2019,Ball State,,9,0
+2020,Ball State,,10,0
+2021,Ball State,,11,0
+2022,Ball State,,12,0
+2023,Ball State,,13,0
+2024,Ball State,,14,0
+2025,Ball State,,15,0
+2015,Baylor,,5,0
+2016,Baylor,,6,0
+2017,Baylor,,7,0
+2018,Baylor,,8,0
+2019,Baylor,,9,0
+2020,Baylor,,10,0
+2021,Baylor,,11,0
+2022,Baylor,,12,0
+2023,Baylor,,13,0
+2024,Baylor,,14,0
+2025,Baylor,,15,0
+2015,Boise State,,5,0
+2016,Boise State,,6,0
+2017,Boise State,,7,0
+2018,Boise State,,8,0
+2019,Boise State,,9,0
+2020,Boise State,,10,0
+2021,Boise State,,11,0
+2022,Boise State,,12,0
+2023,Boise State,,13,0
+2024,Boise State,,14,0
+2025,Boise State,,15,0
+2015,Boston College,,5,0
+2016,Boston College,,6,0
+2017,Boston College,,7,0
+2018,Boston College,,8,0
+2019,Boston College,,9,0
+2020,Boston College,,10,0
+2021,Boston College,,11,0
+2022,Boston College,,12,0
+2023,Boston College,,13,0
+2024,Boston College,,14,0
+2025,Boston College,,15,0
+2015,Bowling Green,,5,0
+2016,Bowling Green,,6,0
+2017,Bowling Green,,7,0
+2018,Bowling Green,,8,0
+2019,Bowling Green,,9,0
+2020,Bowling Green,,10,0
+2021,Bowling Green,,11,0
+2022,Bowling Green,,12,0
+2023,Bowling Green,,13,0
+2024,Bowling Green,,14,0
+2025,Bowling Green,,15,0
+2015,Buffalo,,5,0
+2016,Buffalo,,6,0
+2017,Buffalo,,7,0
+2018,Buffalo,,8,0
+2019,Buffalo,,9,0
+2020,Buffalo,,10,0
+2021,Buffalo,,11,0
+2022,Buffalo,,12,0
+2023,Buffalo,,13,0
+2024,Buffalo,,14,0
+2025,Buffalo,,15,0
+2015,California,,5,0
+2016,California,,6,0
+2017,California,,7,0
+2018,California,,8,0
+2019,California,,9,0
+2020,California,,10,0
+2021,California,,11,0
+2022,California,,12,0
+2023,California,,13,0
+2024,California,,14,0
+2025,California,,15,0
+2015,Central Michigan,,5,0
+2016,Central Michigan,,6,0
+2017,Central Michigan,,7,0
+2018,Central Michigan,,8,0
+2019,Central Michigan,,9,0
+2020,Central Michigan,,10,0
+2021,Central Michigan,,11,0
+2022,Central Michigan,,12,0
+2023,Central Michigan,,13,0
+2024,Central Michigan,,14,0
+2025,Central Michigan,,15,0
+2015,Charlotte,,0,1
+2016,Charlotte,,1,0
+2017,Charlotte,,2,0
+2018,Charlotte,,3,0
+2019,Charlotte,,4,0
+2020,Charlotte,,5,0
+2021,Charlotte,,6,0
+2022,Charlotte,,7,0
+2023,Charlotte,,8,0
+2024,Charlotte,,9,0
+2025,Charlotte,,10,0
+2015,Cincinnati,,5,0
+2016,Cincinnati,,6,0
+2017,Cincinnati,,7,0
+2018,Cincinnati,,8,0
+2019,Cincinnati,,9,0
+2020,Cincinnati,,10,0
+2021,Cincinnati,,11,0
+2022,Cincinnati,,12,0
+2023,Cincinnati,,13,0
+2024,Cincinnati,,14,0
+2025,Cincinnati,,15,0
+2015,Clemson,,5,0
+2016,Clemson,,6,0
+2017,Clemson,,7,0
+2018,Clemson,,8,0
+2019,Clemson,,9,0
+2020,Clemson,,10,0
+2021,Clemson,,11,0
+2022,Clemson,,12,0
+2023,Clemson,,13,0
+2024,Clemson,,14,0
+2025,Clemson,,15,0
+2017,Coastal Carolina,,0,1
+2018,Coastal Carolina,,1,0
+2019,Coastal Carolina,,2,0
+2020,Coastal Carolina,,3,0
+2021,Coastal Carolina,,4,0
+2022,Coastal Carolina,,5,0
+2023,Coastal Carolina,,6,0
+2024,Coastal Carolina,,7,0
+2025,Coastal Carolina,,8,0
+2015,Colorado,,5,0
+2016,Colorado,,6,0
+2017,Colorado,,7,0
+2018,Colorado,,8,0
+2019,Colorado,,9,0
+2020,Colorado,,10,0
+2021,Colorado,,11,0
+2022,Colorado,,12,0
+2023,Colorado,,13,0
+2024,Colorado,,14,0
+2025,Colorado,,15,0
+2015,Colorado State,,5,0
+2016,Colorado State,,6,0
+2017,Colorado State,,7,0
+2018,Colorado State,,8,0
+2019,Colorado State,,9,0
+2020,Colorado State,,10,0
+2021,Colorado State,,11,0
+2022,Colorado State,,12,0
+2023,Colorado State,,13,0
+2024,Colorado State,,14,0
+2025,Colorado State,,15,0
+2025,Delaware,,0,1
+2015,Duke,,5,0
+2016,Duke,,6,0
+2017,Duke,,7,0
+2018,Duke,,8,0
+2019,Duke,,9,0
+2020,Duke,,10,0
+2021,Duke,,11,0
+2022,Duke,,12,0
+2023,Duke,,13,0
+2024,Duke,,14,0
+2025,Duke,,15,0
+2015,East Carolina,,5,0
+2016,East Carolina,,6,0
+2017,East Carolina,,7,0
+2018,East Carolina,,8,0
+2019,East Carolina,,9,0
+2020,East Carolina,,10,0
+2021,East Carolina,,11,0
+2022,East Carolina,,12,0
+2023,East Carolina,,13,0
+2024,East Carolina,,14,0
+2025,East Carolina,,15,0
+2015,Eastern Michigan,,5,0
+2016,Eastern Michigan,,6,0
+2017,Eastern Michigan,,7,0
+2018,Eastern Michigan,,8,0
+2019,Eastern Michigan,,9,0
+2020,Eastern Michigan,,10,0
+2021,Eastern Michigan,,11,0
+2022,Eastern Michigan,,12,0
+2023,Eastern Michigan,,13,0
+2024,Eastern Michigan,,14,0
+2025,Eastern Michigan,,15,0
+2015,Florida,,5,0
+2016,Florida,,6,0
+2017,Florida,,7,0
+2018,Florida,,8,0
+2019,Florida,,9,0
+2020,Florida,,10,0
+2021,Florida,,11,0
+2022,Florida,,12,0
+2023,Florida,,13,0
+2024,Florida,,14,0
+2025,Florida,,15,0
+2015,Florida Atlantic,,5,0
+2016,Florida Atlantic,,6,0
+2017,Florida Atlantic,,7,0
+2018,Florida Atlantic,,8,0
+2019,Florida Atlantic,,9,0
+2020,Florida Atlantic,,10,0
+2021,Florida Atlantic,,11,0
+2022,Florida Atlantic,,12,0
+2023,Florida Atlantic,,13,0
+2024,Florida Atlantic,,14,0
+2025,Florida Atlantic,,15,0
+2015,Florida International,,5,0
+2016,Florida International,,6,0
+2017,Florida International,,7,0
+2018,Florida International,,8,0
+2019,Florida International,,9,0
+2020,Florida International,,10,0
+2021,Florida International,,11,0
+2022,Florida International,,12,0
+2023,Florida International,,13,0
+2024,Florida International,,14,0
+2025,Florida International,,15,0
+2015,Florida State,,5,0
+2016,Florida State,,6,0
+2017,Florida State,,7,0
+2018,Florida State,,8,0
+2019,Florida State,,9,0
+2020,Florida State,,10,0
+2021,Florida State,,11,0
+2022,Florida State,,12,0
+2023,Florida State,,13,0
+2024,Florida State,,14,0
+2025,Florida State,,15,0
+2015,Fresno State,,5,0
+2016,Fresno State,,6,0
+2017,Fresno State,,7,0
+2018,Fresno State,,8,0
+2019,Fresno State,,9,0
+2020,Fresno State,,10,0
+2021,Fresno State,,11,0
+2022,Fresno State,,12,0
+2023,Fresno State,,13,0
+2024,Fresno State,,14,0
+2025,Fresno State,,15,0
+2015,Georgia,,5,0
+2016,Georgia,,6,0
+2017,Georgia,,7,0
+2018,Georgia,,8,0
+2019,Georgia,,9,0
+2020,Georgia,,10,0
+2021,Georgia,,11,0
+2022,Georgia,,12,0
+2023,Georgia,,13,0
+2024,Georgia,,14,0
+2025,Georgia,,15,0
+2015,Georgia Southern,,1,0
+2016,Georgia Southern,,2,0
+2017,Georgia Southern,,3,0
+2018,Georgia Southern,,4,0
+2019,Georgia Southern,,5,0
+2020,Georgia Southern,,6,0
+2021,Georgia Southern,,7,0
+2022,Georgia Southern,,8,0
+2023,Georgia Southern,,9,0
+2024,Georgia Southern,,10,0
+2025,Georgia Southern,,11,0
+2015,Georgia State,,2,0
+2016,Georgia State,,3,0
+2017,Georgia State,,4,0
+2018,Georgia State,,5,0
+2019,Georgia State,,6,0
+2020,Georgia State,,7,0
+2021,Georgia State,,8,0
+2022,Georgia State,,9,0
+2023,Georgia State,,10,0
+2024,Georgia State,,11,0
+2025,Georgia State,,12,0
+2015,Georgia Tech,,5,0
+2016,Georgia Tech,,6,0
+2017,Georgia Tech,,7,0
+2018,Georgia Tech,,8,0
+2019,Georgia Tech,,9,0
+2020,Georgia Tech,,10,0
+2021,Georgia Tech,,11,0
+2022,Georgia Tech,,12,0
+2023,Georgia Tech,,13,0
+2024,Georgia Tech,,14,0
+2025,Georgia Tech,,15,0
+2015,Hawai'i,,5,0
+2016,Hawai'i,,6,0
+2017,Hawai'i,,7,0
+2018,Hawai'i,,8,0
+2019,Hawai'i,,9,0
+2020,Hawai'i,,10,0
+2021,Hawai'i,,11,0
+2022,Hawai'i,,12,0
+2023,Hawai'i,,13,0
+2024,Hawai'i,,14,0
+2025,Hawai'i,,15,0
+2015,Houston,,5,0
+2016,Houston,,6,0
+2017,Houston,,7,0
+2018,Houston,,8,0
+2019,Houston,,9,0
+2020,Houston,,10,0
+2021,Houston,,11,0
+2022,Houston,,12,0
+2023,Houston,,13,0
+2024,Houston,,14,0
+2025,Houston,,15,0
+2015,Idaho,,2,0
+2016,Idaho,,3,0
+2017,Idaho,,4,0
+2015,Illinois,,5,0
+2016,Illinois,,6,0
+2017,Illinois,,7,0
+2018,Illinois,,8,0
+2019,Illinois,,9,0
+2020,Illinois,,10,0
+2021,Illinois,,11,0
+2022,Illinois,,12,0
+2023,Illinois,,13,0
+2024,Illinois,,14,0
+2025,Illinois,,15,0
+2015,Indiana,,5,0
+2016,Indiana,,6,0
+2017,Indiana,,7,0
+2018,Indiana,,8,0
+2019,Indiana,,9,0
+2020,Indiana,,10,0
+2021,Indiana,,11,0
+2022,Indiana,,12,0
+2023,Indiana,,13,0
+2024,Indiana,,14,0
+2025,Indiana,,15,0
+2015,Iowa,,5,0
+2016,Iowa,,6,0
+2017,Iowa,,7,0
+2018,Iowa,,8,0
+2019,Iowa,,9,0
+2020,Iowa,,10,0
+2021,Iowa,,11,0
+2022,Iowa,,12,0
+2023,Iowa,,13,0
+2024,Iowa,,14,0
+2025,Iowa,,15,0
+2015,Iowa State,,5,0
+2016,Iowa State,,6,0
+2017,Iowa State,,7,0
+2018,Iowa State,,8,0
+2019,Iowa State,,9,0
+2020,Iowa State,,10,0
+2021,Iowa State,,11,0
+2022,Iowa State,,12,0
+2023,Iowa State,,13,0
+2024,Iowa State,,14,0
+2025,Iowa State,,15,0
+2023,Jacksonville State,,0,1
+2024,Jacksonville State,,1,0
+2025,Jacksonville State,,2,0
+2022,James Madison,,0,1
+2023,James Madison,,1,0
+2024,James Madison,,2,0
+2025,James Madison,,3,0
+2015,Kansas,,5,0
+2016,Kansas,,6,0
+2017,Kansas,,7,0
+2018,Kansas,,8,0
+2019,Kansas,,9,0
+2020,Kansas,,10,0
+2021,Kansas,,11,0
+2022,Kansas,,12,0
+2023,Kansas,,13,0
+2024,Kansas,,14,0
+2025,Kansas,,15,0
+2015,Kansas State,,5,0
+2016,Kansas State,,6,0
+2017,Kansas State,,7,0
+2018,Kansas State,,8,0
+2019,Kansas State,,9,0
+2020,Kansas State,,10,0
+2021,Kansas State,,11,0
+2022,Kansas State,,12,0
+2023,Kansas State,,13,0
+2024,Kansas State,,14,0
+2025,Kansas State,,15,0
+2024,Kennesaw State,,0,1
+2025,Kennesaw State,,1,0
+2015,Kent State,,5,0
+2016,Kent State,,6,0
+2017,Kent State,,7,0
+2018,Kent State,,8,0
+2019,Kent State,,9,0
+2020,Kent State,,10,0
+2021,Kent State,,11,0
+2022,Kent State,,12,0
+2023,Kent State,,13,0
+2024,Kent State,,14,0
+2025,Kent State,,15,0
+2015,Kentucky,,5,0
+2016,Kentucky,,6,0
+2017,Kentucky,,7,0
+2018,Kentucky,,8,0
+2019,Kentucky,,9,0
+2020,Kentucky,,10,0
+2021,Kentucky,,11,0
+2022,Kentucky,,12,0
+2023,Kentucky,,13,0
+2024,Kentucky,,14,0
+2025,Kentucky,,15,0
+2015,LSU,,5,0
+2016,LSU,,6,0
+2017,LSU,,7,0
+2018,LSU,,8,0
+2019,LSU,,9,0
+2020,LSU,,10,0
+2021,LSU,,11,0
+2022,LSU,,12,0
+2023,LSU,,13,0
+2024,LSU,,14,0
+2025,LSU,,15,0
+2018,Liberty,,0,1
+2019,Liberty,,1,0
+2020,Liberty,,2,0
+2021,Liberty,,3,0
+2022,Liberty,,4,0
+2023,Liberty,,5,0
+2024,Liberty,,6,0
+2025,Liberty,,7,0
+2015,Louisiana,,5,0
+2016,Louisiana,,6,0
+2017,Louisiana,,7,0
+2018,Louisiana,,8,0
+2019,Louisiana,,9,0
+2020,Louisiana,,10,0
+2021,Louisiana,,11,0
+2022,Louisiana,,12,0
+2023,Louisiana,,13,0
+2024,Louisiana,,14,0
+2025,Louisiana,,15,0
+2015,Louisiana Tech,,5,0
+2016,Louisiana Tech,,6,0
+2017,Louisiana Tech,,7,0
+2018,Louisiana Tech,,8,0
+2019,Louisiana Tech,,9,0
+2020,Louisiana Tech,,10,0
+2021,Louisiana Tech,,11,0
+2022,Louisiana Tech,,12,0
+2023,Louisiana Tech,,13,0
+2024,Louisiana Tech,,14,0
+2025,Louisiana Tech,,15,0
+2015,Louisville,,5,0
+2016,Louisville,,6,0
+2017,Louisville,,7,0
+2018,Louisville,,8,0
+2019,Louisville,,9,0
+2020,Louisville,,10,0
+2021,Louisville,,11,0
+2022,Louisville,,12,0
+2023,Louisville,,13,0
+2024,Louisville,,14,0
+2025,Louisville,,15,0
+2015,Marshall,,5,0
+2016,Marshall,,6,0
+2017,Marshall,,7,0
+2018,Marshall,,8,0
+2019,Marshall,,9,0
+2020,Marshall,,10,0
+2021,Marshall,,11,0
+2022,Marshall,,12,0
+2023,Marshall,,13,0
+2024,Marshall,,14,0
+2025,Marshall,,15,0
+2015,Maryland,,5,0
+2016,Maryland,,6,0
+2017,Maryland,,7,0
+2018,Maryland,,8,0
+2019,Maryland,,9,0
+2020,Maryland,,10,0
+2021,Maryland,,11,0
+2022,Maryland,,12,0
+2023,Maryland,,13,0
+2024,Maryland,,14,0
+2025,Maryland,,15,0
+2015,Massachusetts,,3,0
+2016,Massachusetts,,4,0
+2017,Massachusetts,,5,0
+2018,Massachusetts,,6,0
+2019,Massachusetts,,7,0
+2020,Massachusetts,,8,0
+2021,Massachusetts,,9,0
+2022,Massachusetts,,10,0
+2023,Massachusetts,,11,0
+2024,Massachusetts,,12,0
+2025,Massachusetts,,13,0
+2015,Memphis,,5,0
+2016,Memphis,,6,0
+2017,Memphis,,7,0
+2018,Memphis,,8,0
+2019,Memphis,,9,0
+2020,Memphis,,10,0
+2021,Memphis,,11,0
+2022,Memphis,,12,0
+2023,Memphis,,13,0
+2024,Memphis,,14,0
+2025,Memphis,,15,0
+2015,Miami,,5,0
+2016,Miami,,6,0
+2017,Miami,,7,0
+2018,Miami,,8,0
+2019,Miami,,9,0
+2020,Miami,,10,0
+2021,Miami,,11,0
+2022,Miami,,12,0
+2023,Miami,,13,0
+2024,Miami,,14,0
+2025,Miami,,15,0
+2015,Miami (OH),,5,0
+2016,Miami (OH),,6,0
+2017,Miami (OH),,7,0
+2018,Miami (OH),,8,0
+2019,Miami (OH),,9,0
+2020,Miami (OH),,10,0
+2021,Miami (OH),,11,0
+2022,Miami (OH),,12,0
+2023,Miami (OH),,13,0
+2024,Miami (OH),,14,0
+2025,Miami (OH),,15,0
+2015,Michigan,,5,0
+2016,Michigan,,6,0
+2017,Michigan,,7,0
+2018,Michigan,,8,0
+2019,Michigan,,9,0
+2020,Michigan,,10,0
+2021,Michigan,,11,0
+2022,Michigan,,12,0
+2023,Michigan,,13,0
+2024,Michigan,,14,0
+2025,Michigan,,15,0
+2015,Michigan State,,5,0
+2016,Michigan State,,6,0
+2017,Michigan State,,7,0
+2018,Michigan State,,8,0
+2019,Michigan State,,9,0
+2020,Michigan State,,10,0
+2021,Michigan State,,11,0
+2022,Michigan State,,12,0
+2023,Michigan State,,13,0
+2024,Michigan State,,14,0
+2025,Michigan State,,15,0
+2015,Middle Tennessee,,5,0
+2016,Middle Tennessee,,6,0
+2017,Middle Tennessee,,7,0
+2018,Middle Tennessee,,8,0
+2019,Middle Tennessee,,9,0
+2020,Middle Tennessee,,10,0
+2021,Middle Tennessee,,11,0
+2022,Middle Tennessee,,12,0
+2023,Middle Tennessee,,13,0
+2024,Middle Tennessee,,14,0
+2025,Middle Tennessee,,15,0
+2015,Minnesota,,5,0
+2016,Minnesota,,6,0
+2017,Minnesota,,7,0
+2018,Minnesota,,8,0
+2019,Minnesota,,9,0
+2020,Minnesota,,10,0
+2021,Minnesota,,11,0
+2022,Minnesota,,12,0
+2023,Minnesota,,13,0
+2024,Minnesota,,14,0
+2025,Minnesota,,15,0
+2015,Mississippi State,,5,0
+2016,Mississippi State,,6,0
+2017,Mississippi State,,7,0
+2018,Mississippi State,,8,0
+2019,Mississippi State,,9,0
+2020,Mississippi State,,10,0
+2021,Mississippi State,,11,0
+2022,Mississippi State,,12,0
+2023,Mississippi State,,13,0
+2024,Mississippi State,,14,0
+2025,Mississippi State,,15,0
+2015,Missouri,,5,0
+2016,Missouri,,6,0
+2017,Missouri,,7,0
+2018,Missouri,,8,0
+2019,Missouri,,9,0
+2020,Missouri,,10,0
+2021,Missouri,,11,0
+2022,Missouri,,12,0
+2023,Missouri,,13,0
+2024,Missouri,,14,0
+2025,Missouri,,15,0
+2025,Missouri State,,0,1
+2015,NC State,,5,0
+2016,NC State,,6,0
+2017,NC State,,7,0
+2018,NC State,,8,0
+2019,NC State,,9,0
+2020,NC State,,10,0
+2021,NC State,,11,0
+2022,NC State,,12,0
+2023,NC State,,13,0
+2024,NC State,,14,0
+2025,NC State,,15,0
+2015,Navy,,5,0
+2016,Navy,,6,0
+2017,Navy,,7,0
+2018,Navy,,8,0
+2019,Navy,,9,0
+2020,Navy,,10,0
+2021,Navy,,11,0
+2022,Navy,,12,0
+2023,Navy,,13,0
+2024,Navy,,14,0
+2025,Navy,,15,0
+2015,Nebraska,,5,0
+2016,Nebraska,,6,0
+2017,Nebraska,,7,0
+2018,Nebraska,,8,0
+2019,Nebraska,,9,0
+2020,Nebraska,,10,0
+2021,Nebraska,,11,0
+2022,Nebraska,,12,0
+2023,Nebraska,,13,0
+2024,Nebraska,,14,0
+2025,Nebraska,,15,0
+2015,Nevada,,5,0
+2016,Nevada,,6,0
+2017,Nevada,,7,0
+2018,Nevada,,8,0
+2019,Nevada,,9,0
+2020,Nevada,,10,0
+2021,Nevada,,11,0
+2022,Nevada,,12,0
+2023,Nevada,,13,0
+2024,Nevada,,14,0
+2025,Nevada,,15,0
+2015,New Mexico,,5,0
+2016,New Mexico,,6,0
+2017,New Mexico,,7,0
+2018,New Mexico,,8,0
+2019,New Mexico,,9,0
+2020,New Mexico,,10,0
+2021,New Mexico,,11,0
+2022,New Mexico,,12,0
+2023,New Mexico,,13,0
+2024,New Mexico,,14,0
+2025,New Mexico,,15,0
+2015,New Mexico State,,5,0
+2016,New Mexico State,,6,0
+2017,New Mexico State,,7,0
+2018,New Mexico State,,8,0
+2019,New Mexico State,,9,0
+2020,New Mexico State,,10,0
+2021,New Mexico State,,11,0
+2022,New Mexico State,,12,0
+2023,New Mexico State,,13,0
+2024,New Mexico State,,14,0
+2025,New Mexico State,,15,0
+2015,North Carolina,,5,0
+2016,North Carolina,,6,0
+2017,North Carolina,,7,0
+2018,North Carolina,,8,0
+2019,North Carolina,,9,0
+2020,North Carolina,,10,0
+2021,North Carolina,,11,0
+2022,North Carolina,,12,0
+2023,North Carolina,,13,0
+2024,North Carolina,,14,0
+2025,North Carolina,,15,0
+2015,North Texas,,5,0
+2016,North Texas,,6,0
+2017,North Texas,,7,0
+2018,North Texas,,8,0
+2019,North Texas,,9,0
+2020,North Texas,,10,0
+2021,North Texas,,11,0
+2022,North Texas,,12,0
+2023,North Texas,,13,0
+2024,North Texas,,14,0
+2025,North Texas,,15,0
+2015,Northern Illinois,,5,0
+2016,Northern Illinois,,6,0
+2017,Northern Illinois,,7,0
+2018,Northern Illinois,,8,0
+2019,Northern Illinois,,9,0
+2020,Northern Illinois,,10,0
+2021,Northern Illinois,,11,0
+2022,Northern Illinois,,12,0
+2023,Northern Illinois,,13,0
+2024,Northern Illinois,,14,0
+2025,Northern Illinois,,15,0
+2015,Northwestern,,5,0
+2016,Northwestern,,6,0
+2017,Northwestern,,7,0
+2018,Northwestern,,8,0
+2019,Northwestern,,9,0
+2020,Northwestern,,10,0
+2021,Northwestern,,11,0
+2022,Northwestern,,12,0
+2023,Northwestern,,13,0
+2024,Northwestern,,14,0
+2025,Northwestern,,15,0
+2015,Notre Dame,,5,0
+2016,Notre Dame,,6,0
+2017,Notre Dame,,7,0
+2018,Notre Dame,,8,0
+2019,Notre Dame,,9,0
+2020,Notre Dame,,10,0
+2021,Notre Dame,,11,0
+2022,Notre Dame,,12,0
+2023,Notre Dame,,13,0
+2024,Notre Dame,,14,0
+2025,Notre Dame,,15,0
+2015,Ohio,,5,0
+2016,Ohio,,6,0
+2017,Ohio,,7,0
+2018,Ohio,,8,0
+2019,Ohio,,9,0
+2020,Ohio,,10,0
+2021,Ohio,,11,0
+2022,Ohio,,12,0
+2023,Ohio,,13,0
+2024,Ohio,,14,0
+2025,Ohio,,15,0
+2015,Ohio State,,5,0
+2016,Ohio State,,6,0
+2017,Ohio State,,7,0
+2018,Ohio State,,8,0
+2019,Ohio State,,9,0
+2020,Ohio State,,10,0
+2021,Ohio State,,11,0
+2022,Ohio State,,12,0
+2023,Ohio State,,13,0
+2024,Ohio State,,14,0
+2025,Ohio State,,15,0
+2015,Oklahoma,,5,0
+2016,Oklahoma,,6,0
+2017,Oklahoma,,7,0
+2018,Oklahoma,,8,0
+2019,Oklahoma,,9,0
+2020,Oklahoma,,10,0
+2021,Oklahoma,,11,0
+2022,Oklahoma,,12,0
+2023,Oklahoma,,13,0
+2024,Oklahoma,,14,0
+2025,Oklahoma,,15,0
+2015,Oklahoma State,,5,0
+2016,Oklahoma State,,6,0
+2017,Oklahoma State,,7,0
+2018,Oklahoma State,,8,0
+2019,Oklahoma State,,9,0
+2020,Oklahoma State,,10,0
+2021,Oklahoma State,,11,0
+2022,Oklahoma State,,12,0
+2023,Oklahoma State,,13,0
+2024,Oklahoma State,,14,0
+2025,Oklahoma State,,15,0
+2015,Old Dominion,,1,0
+2016,Old Dominion,,2,0
+2017,Old Dominion,,3,0
+2018,Old Dominion,,4,0
+2019,Old Dominion,,5,0
+2020,Old Dominion,,6,0
+2021,Old Dominion,,7,0
+2022,Old Dominion,,8,0
+2023,Old Dominion,,9,0
+2024,Old Dominion,,10,0
+2025,Old Dominion,,11,0
+2015,Ole Miss,,5,0
+2016,Ole Miss,,6,0
+2017,Ole Miss,,7,0
+2018,Ole Miss,,8,0
+2019,Ole Miss,,9,0
+2020,Ole Miss,,10,0
+2021,Ole Miss,,11,0
+2022,Ole Miss,,12,0
+2023,Ole Miss,,13,0
+2024,Ole Miss,,14,0
+2025,Ole Miss,,15,0
+2015,Oregon,,5,0
+2016,Oregon,,6,0
+2017,Oregon,,7,0
+2018,Oregon,,8,0
+2019,Oregon,,9,0
+2020,Oregon,,10,0
+2021,Oregon,,11,0
+2022,Oregon,,12,0
+2023,Oregon,,13,0
+2024,Oregon,,14,0
+2025,Oregon,,15,0
+2015,Oregon State,,5,0
+2016,Oregon State,,6,0
+2017,Oregon State,,7,0
+2018,Oregon State,,8,0
+2019,Oregon State,,9,0
+2020,Oregon State,,10,0
+2021,Oregon State,,11,0
+2022,Oregon State,,12,0
+2023,Oregon State,,13,0
+2024,Oregon State,,14,0
+2025,Oregon State,,15,0
+2015,Penn State,,5,0
+2016,Penn State,,6,0
+2017,Penn State,,7,0
+2018,Penn State,,8,0
+2019,Penn State,,9,0
+2020,Penn State,,10,0
+2021,Penn State,,11,0
+2022,Penn State,,12,0
+2023,Penn State,,13,0
+2024,Penn State,,14,0
+2025,Penn State,,15,0
+2015,Pittsburgh,,5,0
+2016,Pittsburgh,,6,0
+2017,Pittsburgh,,7,0
+2018,Pittsburgh,,8,0
+2019,Pittsburgh,,9,0
+2020,Pittsburgh,,10,0
+2021,Pittsburgh,,11,0
+2022,Pittsburgh,,12,0
+2023,Pittsburgh,,13,0
+2024,Pittsburgh,,14,0
+2025,Pittsburgh,,15,0
+2015,Purdue,,5,0
+2016,Purdue,,6,0
+2017,Purdue,,7,0
+2018,Purdue,,8,0
+2019,Purdue,,9,0
+2020,Purdue,,10,0
+2021,Purdue,,11,0
+2022,Purdue,,12,0
+2023,Purdue,,13,0
+2024,Purdue,,14,0
+2025,Purdue,,15,0
+2015,Rice,,5,0
+2016,Rice,,6,0
+2017,Rice,,7,0
+2018,Rice,,8,0
+2019,Rice,,9,0
+2020,Rice,,10,0
+2021,Rice,,11,0
+2022,Rice,,12,0
+2023,Rice,,13,0
+2024,Rice,,14,0
+2025,Rice,,15,0
+2015,Rutgers,,5,0
+2016,Rutgers,,6,0
+2017,Rutgers,,7,0
+2018,Rutgers,,8,0
+2019,Rutgers,,9,0
+2020,Rutgers,,10,0
+2021,Rutgers,,11,0
+2022,Rutgers,,12,0
+2023,Rutgers,,13,0
+2024,Rutgers,,14,0
+2025,Rutgers,,15,0
+2015,SMU,,5,0
+2016,SMU,,6,0
+2017,SMU,,7,0
+2018,SMU,,8,0
+2019,SMU,,9,0
+2020,SMU,,10,0
+2021,SMU,,11,0
+2022,SMU,,12,0
+2023,SMU,,13,0
+2024,SMU,,14,0
+2025,SMU,,15,0
+2023,Sam Houston,,0,1
+2024,Sam Houston,,1,0
+2025,Sam Houston,,2,0
+2015,San Diego State,,5,0
+2016,San Diego State,,6,0
+2017,San Diego State,,7,0
+2018,San Diego State,,8,0
+2019,San Diego State,,9,0
+2020,San Diego State,,10,0
+2021,San Diego State,,11,0
+2022,San Diego State,,12,0
+2023,San Diego State,,13,0
+2024,San Diego State,,14,0
+2025,San Diego State,,15,0
+2015,San José State,,5,0
+2016,San José State,,6,0
+2017,San José State,,7,0
+2018,San José State,,8,0
+2019,San José State,,9,0
+2020,San José State,,10,0
+2021,San José State,,11,0
+2022,San José State,,12,0
+2023,San José State,,13,0
+2024,San José State,,14,0
+2025,San José State,,15,0
+2015,South Alabama,,3,0
+2016,South Alabama,,4,0
+2017,South Alabama,,5,0
+2018,South Alabama,,6,0
+2019,South Alabama,,7,0
+2020,South Alabama,,8,0
+2021,South Alabama,,9,0
+2022,South Alabama,,10,0
+2023,South Alabama,,11,0
+2024,South Alabama,,12,0
+2025,South Alabama,,13,0
+2015,South Carolina,,5,0
+2016,South Carolina,,6,0
+2017,South Carolina,,7,0
+2018,South Carolina,,8,0
+2019,South Carolina,,9,0
+2020,South Carolina,,10,0
+2021,South Carolina,,11,0
+2022,South Carolina,,12,0
+2023,South Carolina,,13,0
+2024,South Carolina,,14,0
+2025,South Carolina,,15,0
+2015,South Florida,,5,0
+2016,South Florida,,6,0
+2017,South Florida,,7,0
+2018,South Florida,,8,0
+2019,South Florida,,9,0
+2020,South Florida,,10,0
+2021,South Florida,,11,0
+2022,South Florida,,12,0
+2023,South Florida,,13,0
+2024,South Florida,,14,0
+2025,South Florida,,15,0
+2015,Southern Miss,,5,0
+2016,Southern Miss,,6,0
+2017,Southern Miss,,7,0
+2018,Southern Miss,,8,0
+2019,Southern Miss,,9,0
+2020,Southern Miss,,10,0
+2021,Southern Miss,,11,0
+2022,Southern Miss,,12,0
+2023,Southern Miss,,13,0
+2024,Southern Miss,,14,0
+2025,Southern Miss,,15,0
+2015,Stanford,,5,0
+2016,Stanford,,6,0
+2017,Stanford,,7,0
+2018,Stanford,,8,0
+2019,Stanford,,9,0
+2020,Stanford,,10,0
+2021,Stanford,,11,0
+2022,Stanford,,12,0
+2023,Stanford,,13,0
+2024,Stanford,,14,0
+2025,Stanford,,15,0
+2015,Syracuse,,5,0
+2016,Syracuse,,6,0
+2017,Syracuse,,7,0
+2018,Syracuse,,8,0
+2019,Syracuse,,9,0
+2020,Syracuse,,10,0
+2021,Syracuse,,11,0
+2022,Syracuse,,12,0
+2023,Syracuse,,13,0
+2024,Syracuse,,14,0
+2025,Syracuse,,15,0
+2015,TCU,,5,0
+2016,TCU,,6,0
+2017,TCU,,7,0
+2018,TCU,,8,0
+2019,TCU,,9,0
+2020,TCU,,10,0
+2021,TCU,,11,0
+2022,TCU,,12,0
+2023,TCU,,13,0
+2024,TCU,,14,0
+2025,TCU,,15,0
+2015,Temple,,5,0
+2016,Temple,,6,0
+2017,Temple,,7,0
+2018,Temple,,8,0
+2019,Temple,,9,0
+2020,Temple,,10,0
+2021,Temple,,11,0
+2022,Temple,,12,0
+2023,Temple,,13,0
+2024,Temple,,14,0
+2025,Temple,,15,0
+2015,Tennessee,,5,0
+2016,Tennessee,,6,0
+2017,Tennessee,,7,0
+2018,Tennessee,,8,0
+2019,Tennessee,,9,0
+2020,Tennessee,,10,0
+2021,Tennessee,,11,0
+2022,Tennessee,,12,0
+2023,Tennessee,,13,0
+2024,Tennessee,,14,0
+2025,Tennessee,,15,0
+2015,Texas,,5,0
+2016,Texas,,6,0
+2017,Texas,,7,0
+2018,Texas,,8,0
+2019,Texas,,9,0
+2020,Texas,,10,0
+2021,Texas,,11,0
+2022,Texas,,12,0
+2023,Texas,,13,0
+2024,Texas,,14,0
+2025,Texas,,15,0
+2015,Texas A&M,,5,0
+2016,Texas A&M,,6,0
+2017,Texas A&M,,7,0
+2018,Texas A&M,,8,0
+2019,Texas A&M,,9,0
+2020,Texas A&M,,10,0
+2021,Texas A&M,,11,0
+2022,Texas A&M,,12,0
+2023,Texas A&M,,13,0
+2024,Texas A&M,,14,0
+2025,Texas A&M,,15,0
+2015,Texas State,,3,0
+2016,Texas State,,4,0
+2017,Texas State,,5,0
+2018,Texas State,,6,0
+2019,Texas State,,7,0
+2020,Texas State,,8,0
+2021,Texas State,,9,0
+2022,Texas State,,10,0
+2023,Texas State,,11,0
+2024,Texas State,,12,0
+2025,Texas State,,13,0
+2015,Texas Tech,,5,0
+2016,Texas Tech,,6,0
+2017,Texas Tech,,7,0
+2018,Texas Tech,,8,0
+2019,Texas Tech,,9,0
+2020,Texas Tech,,10,0
+2021,Texas Tech,,11,0
+2022,Texas Tech,,12,0
+2023,Texas Tech,,13,0
+2024,Texas Tech,,14,0
+2025,Texas Tech,,15,0
+2015,Toledo,,5,0
+2016,Toledo,,6,0
+2017,Toledo,,7,0
+2018,Toledo,,8,0
+2019,Toledo,,9,0
+2020,Toledo,,10,0
+2021,Toledo,,11,0
+2022,Toledo,,12,0
+2023,Toledo,,13,0
+2024,Toledo,,14,0
+2025,Toledo,,15,0
+2015,Troy,,5,0
+2016,Troy,,6,0
+2017,Troy,,7,0
+2018,Troy,,8,0
+2019,Troy,,9,0
+2020,Troy,,10,0
+2021,Troy,,11,0
+2022,Troy,,12,0
+2023,Troy,,13,0
+2024,Troy,,14,0
+2025,Troy,,15,0
+2015,Tulane,,5,0
+2016,Tulane,,6,0
+2017,Tulane,,7,0
+2018,Tulane,,8,0
+2019,Tulane,,9,0
+2020,Tulane,,10,0
+2021,Tulane,,11,0
+2022,Tulane,,12,0
+2023,Tulane,,13,0
+2024,Tulane,,14,0
+2025,Tulane,,15,0
+2015,Tulsa,,5,0
+2016,Tulsa,,6,0
+2017,Tulsa,,7,0
+2018,Tulsa,,8,0
+2019,Tulsa,,9,0
+2020,Tulsa,,10,0
+2021,Tulsa,,11,0
+2022,Tulsa,,12,0
+2023,Tulsa,,13,0
+2024,Tulsa,,14,0
+2025,Tulsa,,15,0
+2017,UAB,,5,0
+2018,UAB,,6,0
+2019,UAB,,7,0
+2020,UAB,,8,0
+2021,UAB,,9,0
+2022,UAB,,10,0
+2023,UAB,,11,0
+2024,UAB,,12,0
+2025,UAB,,13,0
+2015,UCF,,5,0
+2016,UCF,,6,0
+2017,UCF,,7,0
+2018,UCF,,8,0
+2019,UCF,,9,0
+2020,UCF,,10,0
+2021,UCF,,11,0
+2022,UCF,,12,0
+2023,UCF,,13,0
+2024,UCF,,14,0
+2025,UCF,,15,0
+2015,UCLA,,5,0
+2016,UCLA,,6,0
+2017,UCLA,,7,0
+2018,UCLA,,8,0
+2019,UCLA,,9,0
+2020,UCLA,,10,0
+2021,UCLA,,11,0
+2022,UCLA,,12,0
+2023,UCLA,,13,0
+2024,UCLA,,14,0
+2025,UCLA,,15,0
+2015,UConn,,5,0
+2016,UConn,,6,0
+2017,UConn,,7,0
+2018,UConn,,8,0
+2019,UConn,,9,0
+2020,UConn,,10,0
+2021,UConn,,11,0
+2022,UConn,,12,0
+2023,UConn,,13,0
+2024,UConn,,14,0
+2025,UConn,,15,0
+2015,UL Monroe,,5,0
+2016,UL Monroe,,6,0
+2017,UL Monroe,,7,0
+2018,UL Monroe,,8,0
+2019,UL Monroe,,9,0
+2020,UL Monroe,,10,0
+2021,UL Monroe,,11,0
+2022,UL Monroe,,12,0
+2023,UL Monroe,,13,0
+2024,UL Monroe,,14,0
+2025,UL Monroe,,15,0
+2015,UNLV,,5,0
+2016,UNLV,,6,0
+2017,UNLV,,7,0
+2018,UNLV,,8,0
+2019,UNLV,,9,0
+2020,UNLV,,10,0
+2021,UNLV,,11,0
+2022,UNLV,,12,0
+2023,UNLV,,13,0
+2024,UNLV,,14,0
+2025,UNLV,,15,0
+2015,USC,,5,0
+2016,USC,,6,0
+2017,USC,,7,0
+2018,USC,,8,0
+2019,USC,,9,0
+2020,USC,,10,0
+2021,USC,,11,0
+2022,USC,,12,0
+2023,USC,,13,0
+2024,USC,,14,0
+2025,USC,,15,0
+2015,UTEP,,5,0
+2016,UTEP,,6,0
+2017,UTEP,,7,0
+2018,UTEP,,8,0
+2019,UTEP,,9,0
+2020,UTEP,,10,0
+2021,UTEP,,11,0
+2022,UTEP,,12,0
+2023,UTEP,,13,0
+2024,UTEP,,14,0
+2025,UTEP,,15,0
+2015,UTSA,,3,0
+2016,UTSA,,4,0
+2017,UTSA,,5,0
+2018,UTSA,,6,0
+2019,UTSA,,7,0
+2020,UTSA,,8,0
+2021,UTSA,,9,0
+2022,UTSA,,10,0
+2023,UTSA,,11,0
+2024,UTSA,,12,0
+2025,UTSA,,13,0
+2015,Utah,,5,0
+2016,Utah,,6,0
+2017,Utah,,7,0
+2018,Utah,,8,0
+2019,Utah,,9,0
+2020,Utah,,10,0
+2021,Utah,,11,0
+2022,Utah,,12,0
+2023,Utah,,13,0
+2024,Utah,,14,0
+2025,Utah,,15,0
+2015,Utah State,,5,0
+2016,Utah State,,6,0
+2017,Utah State,,7,0
+2018,Utah State,,8,0
+2019,Utah State,,9,0
+2020,Utah State,,10,0
+2021,Utah State,,11,0
+2022,Utah State,,12,0
+2023,Utah State,,13,0
+2024,Utah State,,14,0
+2025,Utah State,,15,0
+2015,Vanderbilt,,5,0
+2016,Vanderbilt,,6,0
+2017,Vanderbilt,,7,0
+2018,Vanderbilt,,8,0
+2019,Vanderbilt,,9,0
+2020,Vanderbilt,,10,0
+2021,Vanderbilt,,11,0
+2022,Vanderbilt,,12,0
+2023,Vanderbilt,,13,0
+2024,Vanderbilt,,14,0
+2025,Vanderbilt,,15,0
+2015,Virginia,,5,0
+2016,Virginia,,6,0
+2017,Virginia,,7,0
+2018,Virginia,,8,0
+2019,Virginia,,9,0
+2020,Virginia,,10,0
+2021,Virginia,,11,0
+2022,Virginia,,12,0
+2023,Virginia,,13,0
+2024,Virginia,,14,0
+2025,Virginia,,15,0
+2015,Virginia Tech,,5,0
+2016,Virginia Tech,,6,0
+2017,Virginia Tech,,7,0
+2018,Virginia Tech,,8,0
+2019,Virginia Tech,,9,0
+2020,Virginia Tech,,10,0
+2021,Virginia Tech,,11,0
+2022,Virginia Tech,,12,0
+2023,Virginia Tech,,13,0
+2024,Virginia Tech,,14,0
+2025,Virginia Tech,,15,0
+2015,Wake Forest,,5,0
+2016,Wake Forest,,6,0
+2017,Wake Forest,,7,0
+2018,Wake Forest,,8,0
+2019,Wake Forest,,9,0
+2020,Wake Forest,,10,0
+2021,Wake Forest,,11,0
+2022,Wake Forest,,12,0
+2023,Wake Forest,,13,0
+2024,Wake Forest,,14,0
+2025,Wake Forest,,15,0
+2015,Washington,,5,0
+2016,Washington,,6,0
+2017,Washington,,7,0
+2018,Washington,,8,0
+2019,Washington,,9,0
+2020,Washington,,10,0
+2021,Washington,,11,0
+2022,Washington,,12,0
+2023,Washington,,13,0
+2024,Washington,,14,0
+2025,Washington,,15,0
+2015,Washington State,,5,0
+2016,Washington State,,6,0
+2017,Washington State,,7,0
+2018,Washington State,,8,0
+2019,Washington State,,9,0
+2020,Washington State,,10,0
+2021,Washington State,,11,0
+2022,Washington State,,12,0
+2023,Washington State,,13,0
+2024,Washington State,,14,0
+2025,Washington State,,15,0
+2015,West Virginia,,5,0
+2016,West Virginia,,6,0
+2017,West Virginia,,7,0
+2018,West Virginia,,8,0
+2019,West Virginia,,9,0
+2020,West Virginia,,10,0
+2021,West Virginia,,11,0
+2022,West Virginia,,12,0
+2023,West Virginia,,13,0
+2024,West Virginia,,14,0
+2025,West Virginia,,15,0
+2015,Western Kentucky,,5,0
+2016,Western Kentucky,,6,0
+2017,Western Kentucky,,7,0
+2018,Western Kentucky,,8,0
+2019,Western Kentucky,,9,0
+2020,Western Kentucky,,10,0
+2021,Western Kentucky,,11,0
+2022,Western Kentucky,,12,0
+2023,Western Kentucky,,13,0
+2024,Western Kentucky,,14,0
+2025,Western Kentucky,,15,0
+2015,Western Michigan,,5,0
+2016,Western Michigan,,6,0
+2017,Western Michigan,,7,0
+2018,Western Michigan,,8,0
+2019,Western Michigan,,9,0
+2020,Western Michigan,,10,0
+2021,Western Michigan,,11,0
+2022,Western Michigan,,12,0
+2023,Western Michigan,,13,0
+2024,Western Michigan,,14,0
+2025,Western Michigan,,15,0
+2015,Wisconsin,,5,0
+2016,Wisconsin,,6,0
+2017,Wisconsin,,7,0
+2018,Wisconsin,,8,0
+2019,Wisconsin,,9,0
+2020,Wisconsin,,10,0
+2021,Wisconsin,,11,0
+2022,Wisconsin,,12,0
+2023,Wisconsin,,13,0
+2024,Wisconsin,,14,0
+2025,Wisconsin,,15,0
+2015,Wyoming,,5,0
+2016,Wyoming,,6,0
+2017,Wyoming,,7,0
+2018,Wyoming,,8,0
+2019,Wyoming,,9,0
+2020,Wyoming,,10,0
+2021,Wyoming,,11,0
+2022,Wyoming,,12,0
+2023,Wyoming,,13,0
+2024,Wyoming,,14,0
+2025,Wyoming,,15,0

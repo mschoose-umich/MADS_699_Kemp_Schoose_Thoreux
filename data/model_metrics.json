@@ -1,0 +1,125 @@
+{
+  "r2": 0.6281,
+  "rmse": 7.9707,
+  "mae": 6.2639,
+  "correlation": 0.7968,
+  "spearman_r": 0.7905,
+  "spearman_p": 0.0,
+  "interval_coverage": 0.9185,
+  "baseline_rmse": 9.247,
+  "baseline_r2": 0.4995,
+  "rolling_val_rmse": 8.0488,
+  "rolling_val_per_year": {
+    "2020": 7.3241,
+    "2021": 8.1984,
+    "2022": 8.6543,
+    "2023": 7.4045,
+    "2024": 7.5485,
+    "2025": 8.9945
+  },
+  "estimated_decay_rate": 0.7895,
+  "conformal_half_width": 13.5019,
+  "slice_metrics": {
+    "by_conference_rolling_val": {
+      "ACC": {
+        "rmse": 7.8387,
+        "n": 102
+      },
+      "American Athletic": {
+        "rmse": 7.6381,
+        "n": 84
+      },
+      "Big 12": {
+        "rmse": 8.8817,
+        "n": 96
+      },
+      "Big Ten": {
+        "rmse": 8.6637,
+        "n": 108
+      },
+      "Conference USA": {
+        "rmse": 8.7767,
+        "n": 41
+      },
+      "FBS Independents": {
+        "rmse": 7.0553,
+        "n": 12
+      },
+      "Mid-American": {
+        "rmse": 7.878,
+        "n": 72
+      },
+      "Mountain West": {
+        "rmse": 8.0933,
+        "n": 54
+      },
+      "Pac-12": {
+        "rmse": 7.3899,
+        "n": 48
+      },
+      "SEC": {
+        "rmse": 7.438,
+        "n": 96
+      },
+      "Sun Belt": {
+        "rmse": 8.0616,
+        "n": 75
+      }
+    },
+    "by_conference_2025_val": {
+      "ACC": {
+        "rmse": 8.4017,
+        "spearman_r": 0.5319,
+        "n": 17
+      },
+      "American Athletic": {
+        "rmse": 7.8286,
+        "spearman_r": 0.6615,
+        "n": 14
+      },
+      "Big 12": {
+        "rmse": 9.5121,
+        "spearman_r": 0.5029,
+        "n": 16
+      },
+      "Big Ten": {
+        "rmse": 7.8412,
+        "spearman_r": 0.839,
+        "n": 18
+      },
+      "Conference USA": {
+        "rmse": 9.0042,
+        "spearman_r": 0.3,
+        "n": 9
+      },
+      "Mid-American": {
+        "rmse": 7.5476,
+        "spearman_r": 0.8462,
+        "n": 12
+      },
+      "Mountain West": {
+        "rmse": 7.378,
+        "spearman_r": 0.35,
+        "n": 9
+      },
+      "Pac-12": {
+        "rmse": 7.7748,
+        "spearman_r": 0.2857,
+        "n": 8
+      },
+      "SEC": {
+        "rmse": 6.425,
+        "spearman_r": 0.4853,
+        "n": 16
+      },
+      "Sun Belt": {
+        "rmse": 8.2073,
+        "spearman_r": 0.4505,
+        "n": 13
+      }
+    }
+  },
+  "ranker_spearman_r": 0.7289,
+  "ridge_rmse": 8.1651,
+  "ets_rmse": 8.4207
+}

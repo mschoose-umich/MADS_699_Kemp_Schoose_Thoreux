@@ -1,10 +1,10 @@
 # MADS_699_Kemp_Schoose_Thoreux
 MADs Capstone
 
-Data is pulled using get_game_data.py, get_recruit_data.py and get_roster_data.py from the CFBD api:
+Data is pulled using multiple scripts from the CFBD api:
 https://collegefootballdata.com/
 
-In order to run the scripts, you will need an API key. An API key can be obtained from the
+In order to run the application, you will need an API key. An API key can be obtained from the
 above linked site.
 
 Your API key should be stored in a .env file as:
@@ -17,8 +17,6 @@ brew install libomp
 
 Install dependencies with:
 pip install -r requirements.txt
-
-Once that has been completed you can run scripts individually in order to request data, clean data, build the model, and run the streamlit app. Or, more conveniently, you can do it all at once with the run_pipeline_and_dashboard.py script.
 
 RUN:
 python app/run_all.py

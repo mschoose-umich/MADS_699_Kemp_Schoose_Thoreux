@@ -20,15 +20,5 @@ pip install -r requirements.txt
 
 Once that has been completed you can run scripts individually in order to request data, clean data, build the model, and run the streamlit app. Or, more conveniently, you can do it all at once with the run_pipeline_and_dashboard.py script.
 
-RUN AT ONCE:
-python app/run_pipeline_and_dashboard.py
-
-RUN IN ORDER:
-1. python app/get_game_data.py
-2. python app/get_recruit_data.py
-3. python app/get_roster_data.py
-4. python app/merge_roster_rankings.py
-5. python app/team_starters_pipe.py
-6. python app/data_clean_and_split.py
-7. python app/build_model.py
-8. streamlit run app/streamlit_app.py
+RUN:
+python app/run_all.py
